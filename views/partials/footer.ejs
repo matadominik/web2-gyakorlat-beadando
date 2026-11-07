@@ -8,21 +8,45 @@
                 QUICK LINKS
             </h5>
             <ul class="navbar-nav  ">
-                <li class="nav-item">
-                <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
+                <li class="nav-item <%= currentPath === '/' ? 'active' : '' %>">
+                    <a class="nav-link" href="/">Home 
+                        <% if (currentPath === '/') { %>
+                            <span class="sr-only">(current)</span>
+                        <% } %>
+                    </a>
                 </li>
-                <li class="nav-item">
-                <a class="nav-link" href="/gradebook"> Gradebook </a>
+                <li class="nav-item <%= currentPath === '/gradebook' ? 'active' : '' %>">
+                    <a class="nav-link" href="/gradebook"> Gradebook 
+                        <% if (currentPath === '/gradebook') { %>
+                            <span class="sr-only">(current)</span>
+                        <% } %>
+                    </a>
                 </li>
-                <li class="nav-item">
-                <a class="nav-link" href="/faq"> FAQ </a>
-                </li>
-                <li class="nav-item active">
-                <a class="nav-link" href="/contact">Contact us</a>
-                </li>
-                <li class="nav-item">
-                <a class="nav-link" href="/login">Login</a>
-                </li>
+                <% if(user){ %>
+                    <li class="nav-item <%= currentPath === '/faq' ? 'active' : '' %>">
+                        <a class="nav-link" href="/faq"> FAQ 
+                            <% if (currentPath === '/faq') { %>
+                                <span class="sr-only">(current)</span>
+                            <% } %>
+                        </a>
+                    </li>
+                <% } %>
+                <% if(user && user.role=="admin"){ %>
+                    <li class="nav-item <%= currentPath === '/manage-grades' ? 'active' : '' %>">
+                        <a class="nav-link" href="/manage-grades"> Manage grades 
+                            <% if (currentPath === '/manageGrades') { %>
+                                <span class="sr-only">(current)</span>
+                            <% } %>
+                        </a>
+                    </li>
+                <% } %>
+                <li class="nav-item <%= currentPath === '/contact' ? 'active' : '' %>">
+                    <a class="nav-link" href="/contact">Contact us 
+                        <% if (currentPath === '/contact') { %>
+                            <span class="sr-only">(current)</span>
+                        <% } %>
+                    </a>
+                </li>           
             </ul>
             </div>
         </div>

@@ -18,6 +18,7 @@ app.use((req, res, next) => {
     res.locals.user = req.session.user;
     res.locals.message = req.session.message || "";
     req.session.message = "";
+    res.locals.currentPath = req.path;
     next();
 });
 app.use("/", require("./routes/mainRouter"));

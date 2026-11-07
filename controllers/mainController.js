@@ -2,8 +2,10 @@ const User = require("../models/User");
 const bcrypt = require("bcrypt");
 
 exports.homeIndex = (req, res) => { res.render("home"); };
-exports.userIndex = (req, res) => { res.render("user"); };
-exports.adminIndex = (req, res) => { res.render("admin"); };
+exports.faqIndex = (req, res) => { res.render("faq"); };
+exports.gradebookIndex = (req, res) => { res.render("gradebook"); };
+exports.contactIndex = (req, res) => { res.render("contact"); };
+exports.manageGradesIndex = (req, res) => { res.render("manageGrades"); };
 
 exports.registerGet = (req, res) => { res.render("register"); };
 exports.registerPost = async (req, res) => {
@@ -32,11 +34,11 @@ exports.loginPost = async (req, res) => {
     }
     req.session.user = { id: user._id, username: user.username, role: user.role };
     if (user.role === "admin") {
-        res.redirect("/admin");
+        res.redirect("/manage-grades");
     } else {
-        res.redirect("/user");
+        res.redirect("/faq");
     }
 };
 exports.logout = (req, res) => {
-    req.session.destroy(() => { res.redirect("/"); });
+    req.session.destroy(() => { res.redirect("/login"); });
 };

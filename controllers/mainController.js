@@ -5,6 +5,7 @@ exports.homeIndex = (req, res) => { res.render("home"); };
 exports.faqIndex = (req, res) => { res.render("faq"); };
 exports.gradebookIndex = (req, res) => { res.render("gradebook"); };
 exports.contactIndex = (req, res) => { res.render("contact"); };
+exports.statsIndex = (req, res) => { res.render("stats"); };
 exports.manageGradesIndex = (req, res) => { res.render("manageGrades"); };
 
 exports.registerGet = (req, res) => { res.render("register"); };

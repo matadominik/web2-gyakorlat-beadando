@@ -40,6 +40,13 @@
                         </a>
                     </li>
                 <% } %>
+                <li class="nav-item <%= currentPath === '/stats' ? 'active' : '' %>">
+                    <a class="nav-link" href="/stats">Stats 
+                        <% if (currentPath === '/stats') { %>
+                            <span class="sr-only">(current)</span>
+                        <% } %>
+                    </a>
+                </li>
                 <li class="nav-item <%= currentPath === '/contact' ? 'active' : '' %>">
                     <a class="nav-link" href="/contact">Contact us 
                         <% if (currentPath === '/contact') { %>
@@ -53,40 +60,30 @@
         <div class="col-md-3">
             <div class="info_course">
             <h5>
-                TOP RATED COURSE
+                Welcome to e-crayon
             </h5>
             <p>
-                There are many variations of passages of Lorem Ipsum available,
-                but the majority have suffered alteration in some form, by
-                injected humou
+                the place where grades live, students tremble, and subjects wonder why they exist.
+                We store all the data in the cloud, because our laptops are already crying from running Node, Mongo, and Opera at the same time.
+                Browse the tables, admire the charts, and remember: it's not a bug, it's an undocumented feature.
             </p>
             </div>
         </div>
     
         <div class="col-md-5 offset-md-1">
             <div class="info_news">
-            <h5>
-                FOR ANY QUERY, PLEASE WRITE TO US
-            </h5>
-            <div class="info_contact">
-                <a href="">
-                Location
-                </a>
-                <a href="">
-                demo@gmail.com
-                </a>
-                <a href="">
-                Call : +01 1234567890
-                </a>
+                <h5>
+                    MADE BY
+                </h5>
+                <div class="info_contact">
+                    <a href="https://github.com/matadominik" target="_blank">
+                        Mata László Dominik (matadominik - B223VA)
+                    </a>
+                    <a href="https://github.com/Bencuska0812" target="_blank">
+                        Fazekas Bence (Bencuska0812 - ZK6FMO)
+                    </a>
+                </div>
             </div>
-            <form action="">
-                <input type="text" placeholder="Enter Your email" />
-                <button>
-                Subscribe
-                </button>
-            </form>
-            </div>
-        </div>
         </div>
     </div>
 </section>
@@ -96,15 +93,8 @@
 <!-- footer section -->
 <footer class="container-fluid footer_section">
     <p>
-        &copy; 2021 All Rights Reserved By
-        <a href="https://html.design/">Free Html Templates</a>
-    </p>
-</footer>
-
-<footer class="container-fluid footer_section">
-    <p>
-        Distributed By 
-        <a href="https://themewagon.com/">Themewagon</a>
+        &copy; 2026 Proudly submitted just in time by
+        <a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ" target="_blank" style="text-decoration: underline;">us</a>
     </p>
 </footer>
 <!-- footer section -->

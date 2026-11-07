@@ -1,26 +1,104 @@
-<!-- <% if(message){ %><p class="message"><%= message %></p><% } %> -->
+<!DOCTYPE html>
+<html>
 
-<title>Gradebook</title>
+<head>
+  <!-- Basic -->
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <!-- Mobile Metas -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <!-- Site Metas -->
+  <meta name="keywords" content="" />
+  <meta name="description" content="" />
+  <meta name="author" content="" />
 
-<!-- bootstrap core css -->
-<link rel="stylesheet" type="text/css" href="css/bootstrap.css" />
-<!-- fonts style -->
-<link href="https://fonts.googleapis.com/css?family=Open+Sans:400,700|Poppins:400,600,700&display=swap" rel="stylesheet" />
-<!-- Custom styles for this template -->
-<link href="css/style.css" rel="stylesheet" />
-<!-- responsive style -->
-<link href="css/responsive.css" rel="stylesheet" />
+  <title>Gradebook</title>
+
+  <!-- bootstrap core css -->
+  <link rel="stylesheet" type="text/css" href="css/bootstrap.css" />
+  <!-- fonts style -->
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,700|Poppins:400,600,700&display=swap" rel="stylesheet" />
+  <!-- Custom styles for this template -->
+  <link href="css/style.css" rel="stylesheet" />
+  <!-- responsive style -->
+  <link href="css/responsive.css" rel="stylesheet" />
 </head>
 
 <body class="sub_page">
-    <div class="hero_area">
+  <div class="hero_area">
         <%- include("partials/header") %>
+  </div>
+
+  <!-- event section -->
+  <section class="event_section layout_padding">
+    <div class="container">
+      <div class="heading_container">
+        <h3>
+          Events
+        </h3>
+        <p>
+          Upcoming Education Events to feed your brain.
+        </p>
+      </div>
+      <div class="event_container">
+        <div class="box">
+          <div class="img-box">
+            <img src="images/event-img.jpg" alt="" />
+          </div>
+          <div class="detail-box">
+            <h4>
+              Education Events 2021
+            </h4>
+            <h6>
+              8:00 AM - 5:00 PM VENICE, ITALY
+            </h6>
+          </div>
+          <div class="date-box">
+            <h3>
+              <span>
+                15
+              </span>
+              March
+            </h3>
+          </div>
+        </div>
+        <div class="box">
+          <div class="img-box">
+            <img src="images/event-img.jpg" alt="" />
+          </div>
+          <div class="detail-box">
+            <h4>
+              Education Events 2021
+            </h4>
+            <h6>
+              8:00 AM - 5:00 PM VENICE, ITALY
+            </h6>
+          </div>
+          <div class="date-box">
+            <h3>
+              <span>
+                15
+              </span>
+              February
+            </h3>
+          </div>
+        </div>
+      </div>
+      <div class="btn-box">
+        <a href="">
+          Read More
+        </a>
+      </div>
     </div>
+  </section>
 
-    <h1>gradebook</h1>
-    <p>Available to all visitors.</p>
+  <!-- end event section -->
 
-    <script type="text/javascript" src="js/jquery-3.4.1.min.js"></script>
-    <script type="text/javascript" src="js/bootstrap.js"></script>
+  <script type="text/javascript" src="js/jquery-3.4.1.min.js"></script>
+  <script type="text/javascript" src="js/bootstrap.js"></script>
 
   <%- include("partials/footer") %>
+
+</body>
+
+</html>

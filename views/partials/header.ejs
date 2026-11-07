@@ -75,6 +75,13 @@
                             </a>
                         </li>
                     <% } %>
+                    <li class="nav-item <%= currentPath === '/stats' ? 'active' : '' %>">
+                        <a class="nav-link" href="/stats">Stats 
+                            <% if (currentPath === '/stats') { %>
+                                <span class="sr-only">(current)</span>
+                            <% } %>
+                        </a>
+                    </li>
                     <li class="nav-item <%= currentPath === '/contact' ? 'active' : '' %>">
                         <a class="nav-link" href="/contact">Contact us 
                             <% if (currentPath === '/contact') { %>

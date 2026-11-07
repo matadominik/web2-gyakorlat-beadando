@@ -1,0 +1,8 @@
+<%- include("partials/header") %>
+<% if(message){ %><p class="message"><%= message %></p><% } %>
+<form method="POST">
+    <input name="username" placeholder="Username">
+    <input type="password" name="password" placeholder="Password">
+    <button>Registration</button>
+</form>
+<%- include("partials/footer") %>

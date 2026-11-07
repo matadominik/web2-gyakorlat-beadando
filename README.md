@@ -1,11 +1,13 @@
-# web2-gyakorlat-beadando
+# 🖍️ "E-Crayon"
 
-A felhasznált adatbázis:
-1-05-Napló-3 táblás
+*Web-programozás II gyakorlat – beadandó feladat (Node.js)*
 
-A felhasznált téma:
-https://themewagon.com/themes/free-bootstrap-4-html-5-education-website-template-joson/
+---
 
-Készítették:
-Mata László Dominik (matadominik - B223VA)
-Fazekas Bence (Bencuska0812 - ZK6FMO)
+📚 **Adatbázis:** 1-05-Napló-3 táblás
+
+🎨 **Téma:** [Joson](https://themewagon.com/themes/free-bootstrap-4-html-5-education-website-template-joson/)
+
+👥 **Készítették:**
+- Mata László Dominik ([matadominik](https://github.com/matadominik)) – B223VA
+- Fazekas Bence ([Bencuska0812](https://github.com/Bencuska0812)) – ZK6FMO

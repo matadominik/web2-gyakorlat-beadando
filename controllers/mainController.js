@@ -3,7 +3,10 @@ const SentMessage = require("../models/Message");
 const bcrypt = require("bcrypt");
 
 exports.homeIndex = (req, res) => { res.render("home"); };
-exports.feedbackIndex = (req, res) => { res.render("feedback"); };
+exports.feedbackIndex = async (req, res) => {
+    const messages = await SentMessage.find().sort({ _id: -1 });
+    res.render("feedback", { messages });
+};
 exports.gradebookIndex = (req, res) => { res.render("gradebook"); };
 exports.statsIndex = (req, res) => { res.render("stats"); };
 exports.manageGradesIndex = (req, res) => { res.render("manageGrades"); };
@@ -56,5 +59,5 @@ exports.contactPost = async (req, res) => {
     }
     await SentMessage.create({ name: req.body.fullName, email: req.body.emailAddress, message: req.body.inputMessage });
     req.session.message = "Message sent!";
-    res.redirect("/contact");
+    res.redirect("/feedback");
 };

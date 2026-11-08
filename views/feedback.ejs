@@ -43,32 +43,25 @@
         </p>
       </div>
       <div class="event_container">
-        <div class="box">
-          <div class="img-box">
-            <img src="images/event-img.jpg" alt="" />
-          </div>
-          <div class="detail-box">
-            <h4>
-              Rómeó sent this:
-            </h4>
-            <p>
-              I love this site, it is so easy to use!!
-            </p>
-          </div>
-        </div>
-        <div class="box">
-          <div class="img-box">
-            <img src="images/event-img.jpg" alt="" />
-          </div>
-          <div class="detail-box">
-            <h4>
-              Melike sent this:
-            </h4>
-            <h6>
-              Where can I logout?
-            </h6>
-          </div>
-        </div>
+        <% if (messages.length === 0) { %>
+          <p>No messages yet.</p>
+        <% } else { %>
+          <% messages.forEach(m => { %>
+            <div class="box">
+              <div class="img-box">
+                <img src="images/event-img.jpg" alt="" />
+              </div>
+              <div class="detail-box">
+                <h4>
+                  <%= m.name %> sent this:
+                </h4>
+                <p>
+                  <%= m.message %>
+                </p>
+              </div>
+            </div>
+          <% }); %>
+        <% } %>
       </div>
     </div>
   </section>

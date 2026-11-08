@@ -44,7 +44,7 @@
               </h3>
               <p>
                 It is a long established fact that a reader will be distracted
-                by the readable
+                by the readable.
               </p>
             </div>
           </div>
@@ -54,16 +54,17 @@
                 <h5>
                     Get In Touch
                 </h5>
-                <form action="">
+                <form method="POST">
                     <div>
-                        <input type="text" placeholder="Full Name " />
+                        <input name="fullName" type="text" placeholder="Full Name " />
                     </div>
                     <div>
-                        <input type="email" placeholder="Email Address" />
+                        <input name="emailAddress" type="email" placeholder="Email Address" />
                     </div>
                     <div>
-                        <input type="text" placeholder="Message" class="input_message" />
+                        <input name="inputMessage" type="text" placeholder="Message" class="input_message" />
                     </div>
+                    <% if(message){ %><p style="margin-bottom: 0; color: white; text-align: center;"><%= message %></p><% } %>
                     <div class="d-flex justify-content-center">
                         <button type="submit" class="btn_on-hover">
                             Send

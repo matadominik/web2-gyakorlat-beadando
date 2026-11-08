@@ -1,17 +1,17 @@
 const User = require("../models/User");
+const SentMessage = require("../models/Message");
 const bcrypt = require("bcrypt");
 
 exports.homeIndex = (req, res) => { res.render("home"); };
 exports.feedbackIndex = (req, res) => { res.render("feedback"); };
 exports.gradebookIndex = (req, res) => { res.render("gradebook"); };
-exports.contactIndex = (req, res) => { res.render("contact"); };
 exports.statsIndex = (req, res) => { res.render("stats"); };
 exports.manageGradesIndex = (req, res) => { res.render("manageGrades"); };
 
 exports.registerGet = (req, res) => { res.render("register"); };
 exports.registerPost = async (req, res) => {
     if (req.body.username == "" || req.body.password == "") {
-        req.session.message = "Registration failed!!";
+        req.session.message = "Registration failed!";
         return res.redirect("/register");
     }
     const existingUser = await User.findOne({ username: req.body.username });
@@ -46,4 +46,15 @@ exports.loginPost = async (req, res) => {
 };
 exports.logout = (req, res) => {
     req.session.destroy(() => { res.redirect("/login"); });
+};
+
+exports.contactGet = (req, res) => { res.render("contact"); };
+exports.contactPost = async (req, res) => {
+    if (req.body.fullName == "" || req.body.emailAddress == "" || req.body.inputMessage == "") {
+        req.session.message = "Failed to send message!";
+        return res.redirect("/contact");
+    }
+    await SentMessage.create({ name: req.body.fullName, email: req.body.emailAddress, message: req.body.inputMessage });
+    req.session.message = "Message sent!";
+    res.redirect("/contact");
 };

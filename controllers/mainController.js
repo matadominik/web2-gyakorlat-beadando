@@ -10,6 +10,10 @@ exports.manageGradesIndex = (req, res) => { res.render("manageGrades"); };
 
 exports.registerGet = (req, res) => { res.render("register"); };
 exports.registerPost = async (req, res) => {
+    if (req.body.username == "" || req.body.password == "") {
+        req.session.message = "Registration failed!!";
+        return res.redirect("/register");
+    }
     const existingUser = await User.findOne({ username: req.body.username });
     if (existingUser) {
         req.session.message = "This user already exists!";

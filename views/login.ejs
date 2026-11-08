@@ -5,29 +5,28 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
 
-<!-- <% if(message){ %><p class="message"><%= message %></p><% } %> -->
-
-<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-
-<title>Login</title>
-
-<!-- bootstrap core css -->
-<link rel="stylesheet" type="text/css" href="css/bootstrap.css" />
-<!-- fonts style -->
-<link href="https://fonts.googleapis.com/css?family=Open+Sans:400,700|Poppins:400,600,700&display=swap" rel="stylesheet" />
-<!-- Custom styles for this template -->
-<link href="css/style.css" rel="stylesheet" />
-<!-- responsive style -->
-<link href="css/responsive.css" rel="stylesheet" />
+  
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  
+  <title>Login</title>
+  
+  <!-- bootstrap core css -->
+  <link rel="stylesheet" type="text/css" href="css/bootstrap.css" />
+  <!-- fonts style -->
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,700|Poppins:400,600,700&display=swap" rel="stylesheet" />
+  <!-- Custom styles for this template -->
+  <link href="css/style.css" rel="stylesheet" />
+  <!-- responsive style -->
+  <link href="css/responsive.css" rel="stylesheet" />
 </head>
 
 <body class="sub_page">
-    <div class="hero_area">
-        <%- include("partials/header") %>
+  <div class="hero_area">
+    <%- include("partials/header") %>
   </div>
-
+  
   <!-- login section -->
-
+  
   <section class="login_section layout_padding">
     <div class="container">
       <div class="row">
@@ -56,6 +55,7 @@
               <div>
                 <input name="password" type="password" placeholder="Password" />
               </div>
+              <% if(message){ %><p style="margin-bottom: 0;"><%= message %></p><% } %>
               <button type="submit">Login</button>
             </form>
           </div>

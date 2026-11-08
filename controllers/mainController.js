@@ -2,7 +2,7 @@ const User = require("../models/User");
 const bcrypt = require("bcrypt");
 
 exports.homeIndex = (req, res) => { res.render("home"); };
-exports.faqIndex = (req, res) => { res.render("faq"); };
+exports.feedbackIndex = (req, res) => { res.render("feedback"); };
 exports.gradebookIndex = (req, res) => { res.render("gradebook"); };
 exports.contactIndex = (req, res) => { res.render("contact"); };
 exports.statsIndex = (req, res) => { res.render("stats"); };
@@ -41,7 +41,7 @@ exports.loginPost = async (req, res) => {
     if (user.role === "admin") {
         res.redirect("/manage-grades");
     } else {
-        res.redirect("/faq");
+        res.redirect("/feedback");
     }
 };
 exports.logout = (req, res) => {

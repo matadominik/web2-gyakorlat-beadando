@@ -19,6 +19,6 @@ router.get("/logout", controller.logout);
 router.get("/gradebook", controller.gradebookIndex);
 router.get("/contact", controller.contactIndex);
 router.get("/stats", controller.statsIndex);
-router.get("/faq", isLoggedIn, controller.faqIndex);
+router.get("/feedback", isLoggedIn, controller.feedbackIndex);
 router.get("/manage-grades", isAdmin, controller.manageGradesIndex);
 module.exports = router;

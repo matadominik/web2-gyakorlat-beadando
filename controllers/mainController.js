@@ -188,13 +188,10 @@ exports.manageGradesIndex = async (req, res) => {
             .populate("subject")
             .sort({ date: -1, _id: -1 });
 
-        const canApproveStudents = req.session.user.role === "admin" ||
-            (req.session.user.permissions || []).includes("approveStudents");
-        const pendingUsers = canApproveStudents
-            ? await User.find({ role: "user", status: "pending" })
-                .populate("student")
-                .sort({ username: 1 })
-            : [];
+        const canApproveStudents = true;
+        const pendingUsers = await User.find({ role: "user", status: "pending" })
+            .populate("student")
+            .sort({ username: 1 });
         const existingUsers = await User.find({ role: "user", status: { $ne: "pending" } })
             .populate("student")
             .sort({ username: 1 });
@@ -271,132 +268,73 @@ exports.rejectUser = async (req, res) => {
 
 exports.manageTeachersIndex = async (req, res) => {
     try {
-        const teachers = await User.find({
-            role: { $in: ["teacher", "admin"] }
-        }).sort({ username: 1 });
-
-        const studentAccounts = await User.find({ role: "user" })
-            .populate("student")
-            .sort({ username: 1 });
-
-        let editTeacher = null;
-        if (req.query.edit && /^[a-fA-F0-9]{24}$/.test(String(req.query.edit))) {
-            editTeacher = await User.findOne({
-                _id: req.query.edit,
-                role: "teacher"
-            });
-        }
-
-        res.render("manageTeachers", { teachers, studentAccounts, editTeacher });
+        const teachers = await User.find({ role: { $in: ["teacher", "admin"] } }).sort({ username: 1 });
+        const studentAccounts = await User.find({ role: "user" }).populate("student").sort({ username: 1 });
+        res.render("manageTeachers", { teachers, studentAccounts });
     } catch (err) {
         console.error("Manage teachers error:", err);
-        res.status(500).send("An error occurred while loading teacher accounts.");
+        res.status(500).send("An error occurred while loading account management.");
     }
 };
 
-exports.createTeacher = async (req, res) => {
+exports.promoteStudentToTeacher = async (req, res) => {
     try {
-        const displayName = String(req.body.displayName || "").trim();
-        const username = String(req.body.username || "").trim();
-        const password = String(req.body.password || "");
-        const allowedPermissions = ["manageGrades", "approveStudents", "viewMessages"];
-        const permissions = (Array.isArray(req.body.permissions)
-            ? req.body.permissions
-            : req.body.permissions ? [req.body.permissions] : [])
-            .filter(permission => allowedPermissions.includes(permission));
-
-        if (displayName.length < 3 || displayName.length > 100 ||
-            username.length < 3 || username.length > 30 || password.length < 8) {
-            req.session.message = "Enter a valid teacher name, username and a password of at least 8 characters.";
+        const account = await User.findOne({ _id: req.body.userId, role: "user" });
+        if (!account) {
+            req.session.message = "Registered student account not found.";
             return res.redirect("/manage-teachers");
         }
-
-        if (await User.findOne({ username })) {
-            req.session.message = "This username is already in use.";
+        if (account.status !== "approved") {
+            req.session.message = "Only approved accounts can be promoted to teacher.";
             return res.redirect("/manage-teachers");
         }
-
-        await User.create({
-            displayName,
-            username,
-            password: await bcrypt.hash(password, 12),
-            role: "teacher",
-            status: "approved",
-            permissions
-        });
-
-        req.session.message = "Teacher account created successfully.";
+        account.role = "teacher";
+        account.permissions = [];
+        await account.save();
+        req.session.message = `${account.username} is now a teacher.`;
         res.redirect("/manage-teachers");
     } catch (err) {
-        console.error("Create teacher error:", err);
-        req.session.message = "Could not create the teacher account.";
+        console.error("Promote student error:", err);
+        req.session.message = "Could not change this account to a teacher.";
         res.redirect("/manage-teachers");
     }
 };
 
-exports.updateTeacher = async (req, res) => {
+exports.changeAccountPassword = async (req, res) => {
     try {
-        const teacher = await User.findOne({
+        const password = String(req.body.password || "");
+        if (password.length < 8 || password.length > 128) {
+            req.session.message = "The new password must be between 8 and 128 characters.";
+            return res.redirect("/manage-teachers");
+        }
+        const account = await User.findOne({
             _id: req.body.userId,
-            role: "teacher"
+            role: { $in: ["user", "teacher", "admin"] }
         });
-
-        if (!teacher) {
-            req.session.message = "Teacher account not found.";
+        if (!account) {
+            req.session.message = "Account not found.";
             return res.redirect("/manage-teachers");
         }
-
-        const displayName = String(req.body.displayName || "").trim();
-        const username = String(req.body.username || "").trim();
-        const password = String(req.body.password || "");
-        const allowedPermissions = ["manageGrades", "approveStudents", "viewMessages"];
-        const permissions = (Array.isArray(req.body.permissions)
-            ? req.body.permissions
-            : req.body.permissions ? [req.body.permissions] : [])
-            .filter(permission => allowedPermissions.includes(permission));
-
-        if (displayName.length < 3 || displayName.length > 100 ||
-            username.length < 3 || username.length > 30 ||
-            (password && password.length < 8)) {
-            req.session.message = "Please check the teacher name, username and password.";
-            return res.redirect(`/manage-teachers?edit=${teacher._id}`);
-        }
-
-        const usernameInUse = await User.findOne({
-            username,
-            _id: { $ne: teacher._id }
-        });
-        if (usernameInUse) {
-            req.session.message = "This username is already in use.";
-            return res.redirect(`/manage-teachers?edit=${teacher._id}`);
-        }
-
-        teacher.displayName = displayName;
-        teacher.username = username;
-        teacher.permissions = permissions;
-        teacher.status = req.body.status === "disabled" ? "disabled" : "approved";
-        if (password) teacher.password = await bcrypt.hash(password, 12);
-        await teacher.save();
-
-        req.session.message = "Teacher account updated successfully.";
+        account.password = await bcrypt.hash(password, 12);
+        await account.save();
+        req.session.message = `Password changed for ${account.username}.`;
         res.redirect("/manage-teachers");
     } catch (err) {
-        console.error("Update teacher error:", err);
-        req.session.message = "Could not update the teacher account.";
+        console.error("Change account password error:", err);
+        req.session.message = "Could not change the account password.";
         res.redirect("/manage-teachers");
     }
 };
 
 exports.deleteTeacher = async (req, res) => {
     try {
-        const teacher = await User.findOneAndDelete({
-            _id: req.body.userId,
-            role: "teacher"
-        });
-
-        req.session.message = teacher
-            ? "Teacher account deleted."
-            : "Teacher account not found.";
+        const teacher = await User.findOne({ _id: req.body.userId, role: "teacher" });
+        if (teacher && teacher.student) {
+            await Grade.deleteMany({ student: teacher.student });
+            await Student.findByIdAndDelete(teacher.student);
+        }
+        if (teacher) await User.findByIdAndDelete(teacher._id);
+        req.session.message = teacher ? "Teacher account deleted." : "Teacher account not found.";
         res.redirect("/manage-teachers");
     } catch (err) {
         console.error("Delete teacher error:", err);

@@ -29,11 +29,9 @@ const requireRole = (...roles) => (req, res, next) => {
     next();
 };
 
-const requirePermission = permission => (req, res, next) => {
-    const user = req.session.user;
-    const legacyAdmin = user && user.role === "admin";
-    if (!user || !(legacyAdmin || (user.permissions || []).includes(permission))) {
-        return res.status(403).send("You do not have permission to perform this action.");
+const requireTeacher = (req, res, next) => {
+    if (!req.session.user || !["teacher", "admin"].includes(req.session.user.role)) {
+        return res.status(403).send("You do not have permission to access this page.");
     }
     next();
 };
@@ -48,19 +46,19 @@ router.post("/contact", controller.contactPost);
 
 router.get("/gradebook", isLoggedIn, requireRole("user"), controller.gradebookIndex);
 router.get("/stats", isLoggedIn, requireRole("user"), controller.statsIndex);
-router.get("/feedback", isLoggedIn, requirePermission("viewMessages"), controller.feedbackIndex);
+router.get("/feedback", isLoggedIn, requireTeacher, controller.feedbackIndex);
 router.get("/logout", isLoggedIn, controller.logout);
 
-router.get("/manage-grades", isLoggedIn, requirePermission("manageGrades"), controller.manageGradesIndex);
-router.post("/manage-grades/approve-user", isLoggedIn, requirePermission("approveStudents"), controller.approveUser);
-router.post("/manage-grades/reject-user", isLoggedIn, requirePermission("approveStudents"), controller.rejectUser);
-router.post("/manage-grades/create", isLoggedIn, requirePermission("manageGrades"), controller.gradeCreate);
-router.post("/manage-grades/update", isLoggedIn, requirePermission("manageGrades"), controller.gradeUpdate);
-router.post("/manage-grades/delete", isLoggedIn, requirePermission("manageGrades"), controller.gradeDelete);
+router.get("/manage-grades", isLoggedIn, requireTeacher, controller.manageGradesIndex);
+router.post("/manage-grades/approve-user", isLoggedIn, requireTeacher, controller.approveUser);
+router.post("/manage-grades/reject-user", isLoggedIn, requireTeacher, controller.rejectUser);
+router.post("/manage-grades/create", isLoggedIn, requireTeacher, controller.gradeCreate);
+router.post("/manage-grades/update", isLoggedIn, requireTeacher, controller.gradeUpdate);
+router.post("/manage-grades/delete", isLoggedIn, requireTeacher, controller.gradeDelete);
 
 router.get("/manage-teachers", isLoggedIn, requireRole("superadmin"), controller.manageTeachersIndex);
-router.post("/manage-teachers/create", isLoggedIn, requireRole("superadmin"), controller.createTeacher);
-router.post("/manage-teachers/update", isLoggedIn, requireRole("superadmin"), controller.updateTeacher);
+router.post("/manage-teachers/promote", isLoggedIn, requireRole("superadmin"), controller.promoteStudentToTeacher);
+router.post("/manage-teachers/change-password", isLoggedIn, requireRole("superadmin"), controller.changeAccountPassword);
 router.post("/manage-teachers/delete", isLoggedIn, requireRole("superadmin"), controller.deleteTeacher);
 router.post("/manage-teachers/delete-student", isLoggedIn, requireRole("superadmin"), controller.deleteStudentProfile);
 

@@ -28,7 +28,6 @@ const userSchema = new mongoose.Schema({
     },
     permissions: {
         type: [String],
-        enum: ["manageGrades", "approveStudents", "viewMessages"],
         default: []
     },
     student: {

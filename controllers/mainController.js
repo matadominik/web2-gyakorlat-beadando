@@ -137,10 +137,57 @@ exports.manageGradesIndex = async (req, res) => {
     try {
         const students = await Student.find().sort({ name: 1 });
         const subjects = await Subject.find().sort({ name: 1 });
-        const grades = await Grade.find()
+        const classes = await SchoolClass.find().sort({ name: 1 });
+
+        const className = String(req.query.className || "").trim();
+        const studentId = String(req.query.studentId || "").trim();
+        const dateFrom = String(req.query.dateFrom || "").trim();
+        const dateTo = String(req.query.dateTo || "").trim();
+
+        const gradeQuery = {};
+        let matchingStudentIds = null;
+
+        if (className) {
+            const validClass = await SchoolClass.findOne({ name: className });
+            if (validClass) {
+                matchingStudentIds = await Student.find({ className }).distinct("_id");
+                gradeQuery.student = { $in: matchingStudentIds };
+            } else {
+                gradeQuery.student = { $in: [] };
+            }
+        }
+
+        if (studentId && /^[a-fA-F0-9]{24}$/.test(studentId)) {
+            const selectedStudent = await Student.findById(studentId);
+            if (selectedStudent && (!className || selectedStudent.className === className)) {
+                gradeQuery.student = selectedStudent._id;
+            } else {
+                gradeQuery.student = { $in: [] };
+            }
+        } else if (studentId) {
+            gradeQuery.student = { $in: [] };
+        }
+
+        if (dateFrom || dateTo) {
+            gradeQuery.date = {};
+            if (dateFrom && !Number.isNaN(Date.parse(dateFrom))) {
+                gradeQuery.date.$gte = new Date(`${dateFrom}T00:00:00.000Z`);
+            }
+            if (dateTo && !Number.isNaN(Date.parse(dateTo))) {
+                const endDate = new Date(`${dateTo}T00:00:00.000Z`);
+                endDate.setUTCDate(endDate.getUTCDate() + 1);
+                gradeQuery.date.$lt = endDate;
+            }
+            if (Object.keys(gradeQuery.date).length === 0) {
+                delete gradeQuery.date;
+            }
+        }
+
+        const grades = await Grade.find(gradeQuery)
             .populate("student")
             .populate("subject")
-            .sort({ date: -1 });
+            .sort({ date: -1, _id: -1 });
+
         const pendingUsers = await User.find({ role: "user", status: "pending" })
             .populate("student")
             .sort({ username: 1 });
@@ -156,10 +203,12 @@ exports.manageGradesIndex = async (req, res) => {
         res.render("manageGrades", {
             students,
             subjects,
+            classes,
             grades,
             editGrade,
             pendingUsers,
-            existingUsers
+            existingUsers,
+            filters: { className, studentId, dateFrom, dateTo }
         });
     } catch (err) {
         console.error("Manage grades error:", err);

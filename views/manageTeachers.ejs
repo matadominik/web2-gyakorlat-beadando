@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Manage Teachers - E-Crayon</title>
+    <link rel="stylesheet" href="/css/bootstrap.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body class="sub_page">
+    <div class="hero_area">
+        <%- include("partials/header") %>
+    </div>
+
+    <main class="container py-5">
+        <h1 class="mb-4">Teacher Administration</h1>
+        <p class="mb-4">Create teacher accounts, update their details, assign permissions or disable access.</p>
+
+        <% if (message) { %>
+            <div class="alert alert-info"><%= message %></div>
+        <% } %>
+
+        <section class="mb-5">
+            <h3 class="mb-3"><%= editTeacher ? "Edit Teacher" : "Add New Teacher" %></h3>
+            <form method="POST" action="<%= editTeacher ? '/manage-teachers/update' : '/manage-teachers/create' %>" class="border rounded p-3">
+                <% if (editTeacher) { %>
+                    <input type="hidden" name="userId" value="<%= editTeacher._id %>">
+                <% } %>
+
+                <div class="form-group mb-3">
+                    <label for="displayName">Teacher's full name</label>
+                    <input id="displayName" name="displayName" class="form-control" minlength="3" maxlength="100" required value="<%= editTeacher ? editTeacher.displayName : '' %>">
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="username">Username</label>
+                    <input id="username" name="username" class="form-control" minlength="3" maxlength="30" required value="<%= editTeacher ? editTeacher.username : '' %>">
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="password"><%= editTeacher ? "New password (leave blank to keep current)" : "Initial password" %></label>
+                    <input id="password" name="password" type="password" class="form-control" <%= editTeacher ? '' : 'required' %> minlength="8" autocomplete="new-password">
+                </div>
+
+                <% if (editTeacher) { %>
+                    <div class="form-group mb-3">
+                        <label for="status">Account status</label>
+                        <select id="status" name="status" class="form-control">
+                            <option value="approved" <%= editTeacher.status !== "disabled" ? "selected" : "" %>>Active</option>
+                            <option value="disabled" <%= editTeacher.status === "disabled" ? "selected" : "" %>>Disabled</option>
+                        </select>
+                    </div>
+                <% } %>
+
+                <fieldset class="mb-3">
+                    <legend class="h6">Permissions</legend>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="manageGrades" name="permissions" value="manageGrades" <%= editTeacher && editTeacher.permissions.includes("manageGrades") ? "checked" : "" %>>
+                        <label class="form-check-label" for="manageGrades">Manage grades – add, edit and delete grades</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="approveStudents" name="permissions" value="approveStudents" <%= editTeacher && editTeacher.permissions.includes("approveStudents") ? "checked" : "" %>>
+                        <label class="form-check-label" for="approveStudents">Approve students – approve or reject student registrations</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="viewMessages" name="permissions" value="viewMessages" <%= editTeacher && editTeacher.permissions.includes("viewMessages") ? "checked" : "" %>>
+                        <label class="form-check-label" for="viewMessages">View messages – access contact messages</label>
+                    </div>
+                </fieldset>
+
+                <button type="submit" class="btn btn-primary"><%= editTeacher ? "Save Changes" : "Create Teacher" %></button>
+                <% if (editTeacher) { %>
+                    <a href="/manage-teachers" class="btn btn-secondary">Cancel</a>
+                <% } %>
+            </form>
+        </section>
+
+        <hr>
+
+        <section>
+            <h3 class="mb-3">Teacher Accounts</h3>
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Username</th>
+                            <th>Status</th>
+                            <th>Permissions</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if (!teachers.length) { %>
+                            <tr><td colspan="5">No teacher accounts have been created yet.</td></tr>
+                        <% } else { %>
+                            <% teachers.forEach(teacher => { %>
+                                <tr>
+                                    <td><%= teacher.displayName || teacher.username %></td>
+                                    <td><%= teacher.username %></td>
+                                    <td><%= teacher.status === "disabled" ? "Disabled" : "Active" %></td>
+                                    <td>
+                                        <% if (teacher.role === "admin") { %>
+                                            Legacy administrator (full teacher permissions)
+                                        <% } else if (!teacher.permissions || teacher.permissions.length === 0) { %>
+                                            No permissions
+                                        <% } else { %>
+                                            <%= teacher.permissions.join(", ") %>
+                                        <% } %>
+                                    </td>
+                                    <td>
+                                        <% if (teacher.role === "teacher") { %>
+                                            <a href="/manage-teachers?edit=<%= teacher._id %>" class="btn btn-sm btn-warning mb-1">Edit</a>
+                                            <form method="POST" action="/manage-teachers/delete" class="d-inline" onsubmit="return confirm('Delete this teacher account?');">
+                                                <input type="hidden" name="userId" value="<%= teacher._id %>">
+                                                <button type="submit" class="btn btn-sm btn-danger mb-1">Delete</button>
+                                            </form>
+                                        <% } else { %>
+                                            <span class="text-muted">Existing legacy account</span>
+                                        <% } %>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <hr>
+
+        <section class="mt-5">
+            <h3 class="mb-3">Student Profiles</h3>
+            <p>Deleting a student profile also deletes the student's login account and all grades belonging to that student.</p>
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>Full Name</th>
+                            <th>Class</th>
+                            <th>Username</th>
+                            <th>Account Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if (!studentAccounts || studentAccounts.length === 0) { %>
+                            <tr><td colspan="5">No student profiles found.</td></tr>
+                        <% } else { %>
+                            <% studentAccounts.forEach(studentAccount => { %>
+                                <tr>
+                                    <td><%= studentAccount.student ? studentAccount.student.name : "Student record missing" %></td>
+                                    <td><%= studentAccount.student ? studentAccount.student.className : "-" %></td>
+                                    <td><%= studentAccount.username %></td>
+                                    <td><%= studentAccount.status || "approved" %></td>
+                                    <td>
+                                        <form method="POST" action="/manage-teachers/delete-student"
+                                              onsubmit="return confirm('Permanently delete this student profile, login account and all associated grades? This cannot be undone.');">
+                                            <input type="hidden" name="userId" value="<%= studentAccount._id %>">
+                                            <button type="submit" class="btn btn-sm btn-danger">Delete Profile</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <%- include("partials/footer") %>
+</body>
+</html>

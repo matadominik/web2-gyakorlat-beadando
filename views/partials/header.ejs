@@ -23,13 +23,13 @@
                         <a class="nav-link" href="/">Home</a>
                     </li>
 
-                    <% if (user) { %>
+                    <% if (user && user.role === "user") { %>
                     <li class="nav-item <%= currentPath === '/gradebook' ? 'active' : '' %>">
-                    <a class="nav-link" href="/gradebook">Gradebook</a>
+                        <a class="nav-link" href="/gradebook">Gradebook</a>
                     </li>
 
                     <li class="nav-item <%= currentPath === '/stats' ? 'active' : '' %>">
-                    <a class="nav-link" href="/stats">Statistics</a>
+                        <a class="nav-link" href="/stats">Statistics</a>
                     </li>
                     <% } %>
 
@@ -38,13 +38,23 @@
                     </li>
 
                     <% if (user) { %>
-                        <li class="nav-item <%= currentPath === '/feedback' ? 'active' : '' %>">
-                            <a class="nav-link" href="/feedback">Messages</a>
-                        </li>
+                        <% if (user.role === "admin" || (user.permissions || []).includes("viewMessages")) { %>
+                            <li class="nav-item <%= currentPath === '/feedback' ? 'active' : '' %>">
+                                <a class="nav-link" href="/feedback">Messages</a>
+                            </li>
+                        <% } %>
 
-                        <% if (user.role === "admin") { %>
-                            <li class="nav-item <%= currentPath === '/manage-grades' ? 'active' : '' %>">
-                                <a class="nav-link" href="/manage-grades">Manage Grades</a>
+                        <% if (user.role === "admin" || user.role === "teacher") { %>
+                            <% if (user.role === "admin" || (user.permissions || []).includes("manageGrades")) { %>
+                                <li class="nav-item <%= currentPath === '/manage-grades' ? 'active' : '' %>">
+                                    <a class="nav-link" href="/manage-grades">Manage Grades</a>
+                                </li>
+                            <% } %>
+                        <% } %>
+
+                        <% if (user.role === "superadmin") { %>
+                            <li class="nav-item <%= currentPath === '/manage-teachers' ? 'active' : '' %>">
+                                <a class="nav-link" href="/manage-teachers">Manage Teachers</a>
                             </li>
                         <% } %>
 

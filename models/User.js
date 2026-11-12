@@ -13,13 +13,23 @@ const userSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ["user", "admin"],
+        enum: ["user", "teacher", "admin", "superadmin"],
         default: "user"
     },
     status: {
         type: String,
-        enum: ["pending", "approved", "rejected"],
+        enum: ["pending", "approved", "rejected", "disabled"],
         default: "approved"
+    },
+    displayName: {
+        type: String,
+        trim: true,
+        default: ""
+    },
+    permissions: {
+        type: [String],
+        enum: ["manageGrades", "approveStudents", "viewMessages"],
+        default: []
     },
     student: {
         type: mongoose.Schema.Types.ObjectId,

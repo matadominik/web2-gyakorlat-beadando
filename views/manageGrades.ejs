@@ -23,6 +23,7 @@
             <div class="alert alert-info"><%= message %></div>
         <% } %>
 
+        <% if (canApproveStudents) { %>
         <section class="mb-5">
             <h3 class="mb-3">Pending Student Registrations</h3>
             <p>Review new student accounts and approve or reject each registration.</p>
@@ -63,6 +64,7 @@
                 </table>
             </div>
         </section>
+        <% } %>
 
         <hr>
 

@@ -1,0 +1,32 @@
+E-CRAYON – INITIAL SYSTEM ADMINISTRATOR SETUP
+
+The application deliberately does not allow public registration as a teacher or system administrator.
+Student registration remains public and creates a Pending student account.
+
+To appoint the first system administrator, use MongoDB Compass:
+
+1. Open the existing users collection.
+2. Find the existing trusted administrator account that should become the system administrator.
+3. Edit only that document's role field:
+   role: "superadmin"
+4. Save the document.
+5. Log out and log back in with that account.
+
+Important:
+- Do not change the role of every existing admin account.
+- Existing documents with role "admin" continue to work as legacy teacher/admin accounts with all current teacher permissions.
+- The new "superadmin" role is reserved for teacher account administration. It can create, edit, disable and delete teacher accounts and assign permissions, but it does not manage grades or student registrations.
+- The superadmin is not a student and does not need a Student record.
+- New teachers are created by the superadmin from Manage Teachers. Their password is hashed by the application.
+- Teacher permissions:
+  manageGrades: add, edit and delete grades
+  approveStudents: approve or reject student registrations
+  viewMessages: view contact messages
+- A teacher with no permission cannot access the corresponding page or POST endpoint.
+- Do not add the system administrator's password or database credentials to source files or GitHub.
+
+Role values:
+user = student
+teacher = teacher account created by the system administrator
+admin = existing legacy teacher/admin account (kept for compatibility)
+superadmin = system administrator

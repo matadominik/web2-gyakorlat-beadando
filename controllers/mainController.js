@@ -188,9 +188,13 @@ exports.manageGradesIndex = async (req, res) => {
             .populate("subject")
             .sort({ date: -1, _id: -1 });
 
-        const pendingUsers = await User.find({ role: "user", status: "pending" })
-            .populate("student")
-            .sort({ username: 1 });
+        const canApproveStudents = req.session.user.role === "admin" ||
+            (req.session.user.permissions || []).includes("approveStudents");
+        const pendingUsers = canApproveStudents
+            ? await User.find({ role: "user", status: "pending" })
+                .populate("student")
+                .sort({ username: 1 })
+            : [];
         const existingUsers = await User.find({ role: "user", status: { $ne: "pending" } })
             .populate("student")
             .sort({ username: 1 });
@@ -208,7 +212,8 @@ exports.manageGradesIndex = async (req, res) => {
             editGrade,
             pendingUsers,
             existingUsers,
-            filters: { className, studentId, dateFrom, dateTo }
+            filters: { className, studentId, dateFrom, dateTo },
+            canApproveStudents
         });
     } catch (err) {
         console.error("Manage grades error:", err);
@@ -261,6 +266,170 @@ exports.rejectUser = async (req, res) => {
         console.error("Reject user error:", err);
         req.session.message = "Could not reject this registration.";
         res.redirect("/manage-grades");
+    }
+};
+
+exports.manageTeachersIndex = async (req, res) => {
+    try {
+        const teachers = await User.find({
+            role: { $in: ["teacher", "admin"] }
+        }).sort({ username: 1 });
+
+        const studentAccounts = await User.find({ role: "user" })
+            .populate("student")
+            .sort({ username: 1 });
+
+        let editTeacher = null;
+        if (req.query.edit && /^[a-fA-F0-9]{24}$/.test(String(req.query.edit))) {
+            editTeacher = await User.findOne({
+                _id: req.query.edit,
+                role: "teacher"
+            });
+        }
+
+        res.render("manageTeachers", { teachers, studentAccounts, editTeacher });
+    } catch (err) {
+        console.error("Manage teachers error:", err);
+        res.status(500).send("An error occurred while loading teacher accounts.");
+    }
+};
+
+exports.createTeacher = async (req, res) => {
+    try {
+        const displayName = String(req.body.displayName || "").trim();
+        const username = String(req.body.username || "").trim();
+        const password = String(req.body.password || "");
+        const allowedPermissions = ["manageGrades", "approveStudents", "viewMessages"];
+        const permissions = (Array.isArray(req.body.permissions)
+            ? req.body.permissions
+            : req.body.permissions ? [req.body.permissions] : [])
+            .filter(permission => allowedPermissions.includes(permission));
+
+        if (displayName.length < 3 || displayName.length > 100 ||
+            username.length < 3 || username.length > 30 || password.length < 8) {
+            req.session.message = "Enter a valid teacher name, username and a password of at least 8 characters.";
+            return res.redirect("/manage-teachers");
+        }
+
+        if (await User.findOne({ username })) {
+            req.session.message = "This username is already in use.";
+            return res.redirect("/manage-teachers");
+        }
+
+        await User.create({
+            displayName,
+            username,
+            password: await bcrypt.hash(password, 12),
+            role: "teacher",
+            status: "approved",
+            permissions
+        });
+
+        req.session.message = "Teacher account created successfully.";
+        res.redirect("/manage-teachers");
+    } catch (err) {
+        console.error("Create teacher error:", err);
+        req.session.message = "Could not create the teacher account.";
+        res.redirect("/manage-teachers");
+    }
+};
+
+exports.updateTeacher = async (req, res) => {
+    try {
+        const teacher = await User.findOne({
+            _id: req.body.userId,
+            role: "teacher"
+        });
+
+        if (!teacher) {
+            req.session.message = "Teacher account not found.";
+            return res.redirect("/manage-teachers");
+        }
+
+        const displayName = String(req.body.displayName || "").trim();
+        const username = String(req.body.username || "").trim();
+        const password = String(req.body.password || "");
+        const allowedPermissions = ["manageGrades", "approveStudents", "viewMessages"];
+        const permissions = (Array.isArray(req.body.permissions)
+            ? req.body.permissions
+            : req.body.permissions ? [req.body.permissions] : [])
+            .filter(permission => allowedPermissions.includes(permission));
+
+        if (displayName.length < 3 || displayName.length > 100 ||
+            username.length < 3 || username.length > 30 ||
+            (password && password.length < 8)) {
+            req.session.message = "Please check the teacher name, username and password.";
+            return res.redirect(`/manage-teachers?edit=${teacher._id}`);
+        }
+
+        const usernameInUse = await User.findOne({
+            username,
+            _id: { $ne: teacher._id }
+        });
+        if (usernameInUse) {
+            req.session.message = "This username is already in use.";
+            return res.redirect(`/manage-teachers?edit=${teacher._id}`);
+        }
+
+        teacher.displayName = displayName;
+        teacher.username = username;
+        teacher.permissions = permissions;
+        teacher.status = req.body.status === "disabled" ? "disabled" : "approved";
+        if (password) teacher.password = await bcrypt.hash(password, 12);
+        await teacher.save();
+
+        req.session.message = "Teacher account updated successfully.";
+        res.redirect("/manage-teachers");
+    } catch (err) {
+        console.error("Update teacher error:", err);
+        req.session.message = "Could not update the teacher account.";
+        res.redirect("/manage-teachers");
+    }
+};
+
+exports.deleteTeacher = async (req, res) => {
+    try {
+        const teacher = await User.findOneAndDelete({
+            _id: req.body.userId,
+            role: "teacher"
+        });
+
+        req.session.message = teacher
+            ? "Teacher account deleted."
+            : "Teacher account not found.";
+        res.redirect("/manage-teachers");
+    } catch (err) {
+        console.error("Delete teacher error:", err);
+        req.session.message = "Could not delete the teacher account.";
+        res.redirect("/manage-teachers");
+    }
+};
+
+exports.deleteStudentProfile = async (req, res) => {
+    try {
+        const studentUser = await User.findOne({
+            _id: req.body.userId,
+            role: "user"
+        });
+
+        if (!studentUser) {
+            req.session.message = "Student account not found.";
+            return res.redirect("/manage-teachers");
+        }
+
+        if (studentUser.student) {
+            await Grade.deleteMany({ student: studentUser.student });
+            await Student.findByIdAndDelete(studentUser.student);
+        }
+
+        await User.findByIdAndDelete(studentUser._id);
+
+        req.session.message = "Student profile, account and associated grades were deleted.";
+        res.redirect("/manage-teachers");
+    } catch (err) {
+        console.error("Delete student profile error:", err);
+        req.session.message = "Could not delete the student profile.";
+        res.redirect("/manage-teachers");
     }
 };
 
@@ -367,13 +536,23 @@ exports.loginPost = async (req, res) => {
             return res.redirect("/login");
         }
 
+        if (user.status === "disabled") {
+            req.session.message = "This account has been disabled. Please contact the system administrator.";
+            return res.redirect("/login");
+        }
+
         req.session.user = {
             id: user._id,
             username: user.username,
-            role: user.role
+            role: user.role,
+            permissions: user.permissions || []
         };
 
-        if (user.role === "admin") {
+        if (user.role === "superadmin") {
+            return res.redirect("/manage-teachers");
+        }
+
+        if (user.role === "teacher" || user.role === "admin") {
             return res.redirect("/manage-grades");
         }
 

@@ -50,13 +50,13 @@ router.get("/feedback", isLoggedIn, requireTeacher, controller.feedbackIndex);
 router.get("/logout", isLoggedIn, controller.logout);
 
 router.get("/manage-grades", isLoggedIn, requireTeacher, controller.manageGradesIndex);
-router.post("/manage-grades/approve-user", isLoggedIn, requireTeacher, controller.approveUser);
-router.post("/manage-grades/reject-user", isLoggedIn, requireTeacher, controller.rejectUser);
 router.post("/manage-grades/create", isLoggedIn, requireTeacher, controller.gradeCreate);
 router.post("/manage-grades/update", isLoggedIn, requireTeacher, controller.gradeUpdate);
 router.post("/manage-grades/delete", isLoggedIn, requireTeacher, controller.gradeDelete);
 
 router.get("/manage-teachers", isLoggedIn, requireRole("superadmin"), controller.manageTeachersIndex);
+router.post("/manage-teachers/approve-user", isLoggedIn, requireRole("superadmin"), controller.approveUser);
+router.post("/manage-teachers/reject-user", isLoggedIn, requireRole("superadmin"), controller.rejectUser);
 router.post("/manage-teachers/promote", isLoggedIn, requireRole("superadmin"), controller.promoteStudentToTeacher);
 router.post("/manage-teachers/change-password", isLoggedIn, requireRole("superadmin"), controller.changeAccountPassword);
 router.post("/manage-teachers/delete", isLoggedIn, requireRole("superadmin"), controller.deleteTeacher);

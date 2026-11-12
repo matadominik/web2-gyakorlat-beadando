@@ -188,7 +188,7 @@ exports.manageGradesIndex = async (req, res) => {
             .populate("subject")
             .sort({ date: -1, _id: -1 });
 
-        const canApproveStudents = true;
+        const canApproveStudents = false;
         const pendingUsers = await User.find({ role: "user", status: "pending" })
             .populate("student")
             .sort({ username: 1 });
@@ -228,17 +228,17 @@ exports.approveUser = async (req, res) => {
 
         if (!user) {
             req.session.message = "Pending registration not found.";
-            return res.redirect("/manage-grades");
+            return res.redirect("/manage-teachers");
         }
 
         user.status = "approved";
         await user.save();
         req.session.message = "Student registration approved successfully.";
-        res.redirect("/manage-grades");
+        res.redirect("/manage-teachers");
     } catch (err) {
         console.error("Approve user error:", err);
         req.session.message = "Could not approve this registration.";
-        res.redirect("/manage-grades");
+        res.redirect("/manage-teachers");
     }
 };
 
@@ -252,17 +252,17 @@ exports.rejectUser = async (req, res) => {
 
         if (!user) {
             req.session.message = "Pending registration not found.";
-            return res.redirect("/manage-grades");
+            return res.redirect("/manage-teachers");
         }
 
         user.status = "rejected";
         await user.save();
         req.session.message = "Student registration rejected.";
-        res.redirect("/manage-grades");
+        res.redirect("/manage-teachers");
     } catch (err) {
         console.error("Reject user error:", err);
         req.session.message = "Could not reject this registration.";
-        res.redirect("/manage-grades");
+        res.redirect("/manage-teachers");
     }
 };
 
@@ -270,7 +270,8 @@ exports.manageTeachersIndex = async (req, res) => {
     try {
         const teachers = await User.find({ role: { $in: ["teacher", "admin"] } }).sort({ username: 1 });
         const studentAccounts = await User.find({ role: "user" }).populate("student").sort({ username: 1 });
-        res.render("manageTeachers", { teachers, studentAccounts });
+        const pendingUsers = await User.find({ role: "user", status: "pending" }).populate("student").sort({ username: 1 });
+        res.render("manageTeachers", { teachers, studentAccounts, pendingUsers });
     } catch (err) {
         console.error("Manage teachers error:", err);
         res.status(500).send("An error occurred while loading account management.");

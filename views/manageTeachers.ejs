@@ -22,6 +22,43 @@
         <% } %>
 
         <section class="mb-5">
+            <h3 class="mb-3">Pending Student Registrations</h3>
+            <p>Only the system administrator can approve or reject new student registrations.</p>
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr><th>Full Name</th><th>Class</th><th>Username</th><th>Action</th></tr>
+                    </thead>
+                    <tbody>
+                        <% if (!pendingUsers || pendingUsers.length === 0) { %>
+                            <tr><td colspan="4">There are no pending registrations.</td></tr>
+                        <% } else { %>
+                            <% pendingUsers.forEach(pendingUser => { %>
+                                <tr>
+                                    <td><%= pendingUser.student ? pendingUser.student.name : "Student record missing" %></td>
+                                    <td><%= pendingUser.student ? pendingUser.student.className : "-" %></td>
+                                    <td><%= pendingUser.username %></td>
+                                    <td>
+                                        <form action="/manage-teachers/approve-user" method="POST" class="d-inline">
+                                            <input type="hidden" name="userId" value="<%= pendingUser._id %>">
+                                            <button type="submit" class="btn btn-sm btn-success mb-1">Approve</button>
+                                        </form>
+                                        <form action="/manage-teachers/reject-user" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to reject this registration?');">
+                                            <input type="hidden" name="userId" value="<%= pendingUser._id %>">
+                                            <button type="submit" class="btn btn-sm btn-danger mb-1">Reject</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <hr>
+
+        <section class="mb-5">
             <h3 class="mb-3">Teacher Accounts</h3>
             <div class="table-responsive">
                 <table class="table table-bordered table-striped">

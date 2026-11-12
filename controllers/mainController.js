@@ -1,10 +1,11 @@
+
 const User = require("../models/User");
 const SentMessage = require("../models/Message");
 const bcrypt = require("bcrypt");
+
 const Student = require("../models/Student");
 const Subject = require("../models/Subject");
 const Grade = require("../models/Grade");
-
 
 exports.homeIndex = (req, res) => {
     res.render("home");
@@ -20,21 +21,60 @@ exports.feedbackIndex = async (req, res) => {
     }
 };
 
-
 exports.gradebookIndex = async (req, res) => {
     try {
-        const students = await Student.find().sort({ name: 1 });
-        const subjects = await Subject.find().sort({ name: 1 });
+        if (!req.session.user) {
+            return res.redirect("/login");
+        }
 
-        const grades = await Grade.find()
-            .populate("student")
-            .populate("subject")
-            .sort({ date: -1 });
+        let students = [];
+        let subjects = [];
+        let grades = [];
+        let accountNotLinked = false;
+
+        if (req.session.user.role === "admin") {
+            students = await Student.find().sort({ name: 1 });
+            subjects = await Subject.find().sort({ name: 1 });
+
+            grades = await Grade.find()
+                .populate("student")
+                .populate("subject")
+                .sort({ date: -1 });
+        } else {
+            const user = await User.findById(req.session.user.id)
+                .populate("student");
+
+            if (!user || !user.student) {
+                accountNotLinked = true;
+            } else {
+                students = [user.student];
+
+                grades = await Grade.find({
+                    student: user.student._id
+                })
+                    .populate("student")
+                    .populate("subject")
+                    .sort({ date: -1 });
+
+                const subjectIds = [
+                    ...new Set(
+                        grades
+                            .filter(grade => grade.subject)
+                            .map(grade => grade.subject._id.toString())
+                    )
+                ];
+
+                subjects = await Subject.find({
+                    _id: { $in: subjectIds }
+                }).sort({ name: 1 });
+            }
+        }
 
         res.render("gradebook", {
             students,
             subjects,
-            grades
+            grades,
+            accountNotLinked
         });
     } catch (err) {
         console.error("Gradebook error:", err);
@@ -42,10 +82,26 @@ exports.gradebookIndex = async (req, res) => {
     }
 };
 
-
 exports.statsIndex = async (req, res) => {
     try {
+        let match = {};
+
+        if (req.session.user && req.session.user.role !== "admin") {
+            const user = await User.findById(req.session.user.id);
+
+            if (!user || !user.student) {
+                return res.render("stats", {
+                    gradeCounts: [0, 0, 0, 0, 0],
+                    totalGrades: 0,
+                    accountNotLinked: true
+                });
+            }
+
+            match.student = user.student;
+        }
+
         const result = await Grade.aggregate([
+            { $match: match },
             {
                 $group: {
                     _id: "$value",
@@ -60,18 +116,21 @@ exports.statsIndex = async (req, res) => {
             return found ? found.count : 0;
         });
 
-        const totalGrades = gradeCounts.reduce((sum, count) => sum + count, 0);
+        const totalGrades = gradeCounts.reduce(
+            (sum, count) => sum + count,
+            0
+        );
 
         res.render("stats", {
             gradeCounts,
-            totalGrades
+            totalGrades,
+            accountNotLinked: false
         });
     } catch (err) {
         console.error("Statistics error:", err);
         res.status(500).send("An error occurred while loading statistics.");
     }
 };
-
 
 exports.manageGradesIndex = async (req, res) => {
     try {
@@ -83,6 +142,10 @@ exports.manageGradesIndex = async (req, res) => {
             .populate("subject")
             .sort({ date: -1 });
 
+        const users = await User.find({ role: "user" })
+            .populate("student")
+            .sort({ username: 1 });
+
         let editGrade = null;
 
         if (req.query.edit) {
@@ -93,7 +156,8 @@ exports.manageGradesIndex = async (req, res) => {
             students,
             subjects,
             grades,
-            editGrade
+            editGrade,
+            users
         });
     } catch (err) {
         console.error("Manage grades error:", err);
@@ -101,6 +165,49 @@ exports.manageGradesIndex = async (req, res) => {
     }
 };
 
+exports.linkStudent = async (req, res) => {
+    try {
+        const { userId, studentId } = req.body;
+
+        if (!userId || !studentId) {
+            req.session.message = "Please select a user and a student.";
+            return res.redirect("/manage-grades");
+        }
+
+        const user = await User.findOne({
+            _id: userId,
+            role: "user"
+        });
+
+        const student = await Student.findById(studentId);
+
+        if (!user || !student) {
+            req.session.message = "User or student not found.";
+            return res.redirect("/manage-grades");
+        }
+
+       
+        const existingLink = await User.findOne({
+            student: studentId,
+            _id: { $ne: userId }
+        });
+
+        if (existingLink) {
+            req.session.message = "This student is already linked to another account.";
+            return res.redirect("/manage-grades");
+        }
+
+        user.student = student._id;
+        await user.save();
+
+        req.session.message = "Student account linked successfully!";
+        res.redirect("/manage-grades");
+    } catch (err) {
+        console.error("Student linking error:", err);
+        req.session.message = "Failed to link student account.";
+        res.redirect("/manage-grades");
+    }
+};
 
 exports.registerGet = (req, res) => {
     res.render("register");
@@ -139,7 +246,6 @@ exports.registerPost = async (req, res) => {
         res.redirect("/register");
     }
 };
-
 
 exports.loginGet = (req, res) => {
     res.render("login");
@@ -182,13 +288,11 @@ exports.loginPost = async (req, res) => {
     }
 };
 
-
 exports.logout = (req, res) => {
     req.session.destroy(() => {
         res.redirect("/login");
     });
 };
-
 
 exports.contactGet = (req, res) => {
     res.render("contact");
@@ -232,7 +336,6 @@ exports.contactPost = async (req, res) => {
     }
 };
 
-
 exports.gradeCreate = async (req, res) => {
     try {
         const { student, subject, value, type, date, note } = req.body;
@@ -260,7 +363,6 @@ exports.gradeCreate = async (req, res) => {
     }
 };
 
-
 exports.gradeUpdate = async (req, res) => {
     try {
         const { id, student, subject, value, type, date, note } = req.body;
@@ -286,7 +388,6 @@ exports.gradeUpdate = async (req, res) => {
         res.redirect("/manage-grades");
     }
 };
-
 
 exports.gradeDelete = async (req, res) => {
     try {

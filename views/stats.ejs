@@ -20,87 +20,109 @@
 
     <div class="container py-5">
         <h1 class="mb-3">Grade Statistics</h1>
-        <p>Overview of grades stored in the database.</p>
 
-        <div class="row mb-4">
-            <div class="col-md-4">
-                <div class="card p-3 text-center">
-                    <h5>Total Recorded Grades</h5>
-                    <h2><%= totalGrades %></h2>
+        <% if (accountNotLinked) { %>
+
+            <div class="alert alert-warning">
+                <h5>Student account not linked</h5>
+                <p>
+                    Your account has not yet been connected to a student record.
+                    Please contact the administrator.
+                </p>
+            </div>
+
+        <% } else { %>
+
+            <p>
+                <%= user && user.role === "admin"
+                    ? "Overview of all grades stored in the database."
+                    : "Overview of your personal grades." %>
+            </p>
+
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card p-3 text-center">
+                        <h5>Total Recorded Grades</h5>
+                        <h2><%= totalGrades %></h2>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <% if (totalGrades === 0) { %>
-            <div class="alert alert-info">
-                There is currently no data available for the statistics.
+            <% if (totalGrades === 0) { %>
+                <div class="alert alert-info">
+                    There is currently no data available for the statistics.
+                </div>
+            <% } %>
+
+            <div class="card p-4">
+                <h4 class="mb-3">Grade Distribution</h4>
+
+                <div style="position: relative; height: 350px;">
+                    <canvas id="gradeChart"></canvas>
+                </div>
             </div>
+
         <% } %>
-
-        <div class="card p-4">
-            <h4 class="mb-3">Grade Distribution</h4>
-            <div style="position: relative; height: 350px;">
-                <canvas id="gradeChart"></canvas>
-            </div>
-        </div>
     </div>
 
     <%- include("partials/footer") %>
 
-    <script>
-        const gradeCounts = JSON.parse('<%- JSON.stringify(gradeCounts || [0, 0, 0, 0, 0]) %>');
+    <% if (!accountNotLinked) { %>
+        <script>
+            const gradeCounts = JSON.parse('<%- JSON.stringify(gradeCounts || [0, 0, 0, 0, 0]) %>');
 
-        const ctx = document.getElementById("gradeChart");
+            const ctx = document.getElementById("gradeChart");
 
-        new Chart(ctx, {
-            type: "bar",
-            data: {
-                labels: [
-                    "Fail (1)",
-                    "Pass (2)",
-                    "Satisfactory (3)",
-                    "Good (4)",
-                    "Excellent (5)"
-                ],
-                datasets: [{
-                    label: "Number of Grades",
-                    data: gradeCounts,
-                    backgroundColor: [
-                        "#dc3545",
-                        "#fd7e14",
-                        "#ffc107",
-                        "#0d6efd",
-                        "#198754"
+            new Chart(ctx, {
+                type: "bar",
+                data: {
+                    labels: [
+                        "Fail (1)",
+                        "Pass (2)",
+                        "Satisfactory (3)",
+                        "Good (4)",
+                        "Excellent (5)"
                     ],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            precision: 0
+                    datasets: [{
+                        label: "Number of Grades",
+                        data: gradeCounts,
+                        backgroundColor: [
+                            "#dc3545",
+                            "#fd7e14",
+                            "#ffc107",
+                            "#0d6efd",
+                            "#198754"
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            },
+                            title: {
+                                display: true,
+                                text: "Number of Grades"
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
                         },
                         title: {
                             display: true,
-                            text: "Number of Grades"
+                            text: "Grade Distribution"
                         }
                     }
-                },
-                plugins: {
-                    legend: {
-                        display: false
-                    },
-                    title: {
-                        display: true,
-                        text: "Grade Distribution"
-                    }
                 }
-            }
-        });
-    </script>
+            });
+        </script>
+    <% } %>
 </body>
 </html>

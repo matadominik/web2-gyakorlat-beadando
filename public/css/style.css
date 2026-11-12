@@ -59,7 +59,6 @@ body {
           transform: translateY(-50%) rotate(20deg);
 }
 
-/*header section*/
 .hero_area {
   height: 100vh;
   background-color: #b5caee;
@@ -183,7 +182,6 @@ a:focus {
   background-size: 42px;
 }
 
-/*end header section*/
 .slider_section {
   height: 90%;
   display: -webkit-box;
@@ -727,7 +725,6 @@ a:focus {
   margin-bottom: 15px;
 }
 
-/* contact section */
 .contact_section {
   background-color: #164745;
   position: relative;
@@ -748,6 +745,7 @@ a:focus {
   background-color: #ffffff;
   -webkit-clip-path: polygon(0 0, 95% 0, 65% 100%, 0% 100%);
           clip-path: polygon(0 0, 95% 0, 65% 100%, 0% 100%);
+  z-index: 0;
 }
 
 .contact_section .row {
@@ -758,6 +756,8 @@ a:focus {
 
 .contact_section .detail-box {
   width: 250px;
+  position: relative;
+  z-index: 1;
 }
 
 .contact_section .detail-box p {
@@ -767,6 +767,8 @@ a:focus {
 .contact_section .contact-form {
   padding: 45px 0;
   border-radius: 20px;
+  position: relative;
+  z-index: 1;
 }
 
 .contact_section .contact-form h5 {
@@ -785,24 +787,38 @@ a:focus {
   border-radius: 30px;
 }
 
-.contact_section .contact-form input.input_message {
+.contact_section .contact-form textarea.input_message {
+  display: block;
+  width: 100%;
   height: 105px;
-  border-radius: 10px;
+  margin: 15px 0;
+  padding: 10px 20px;
+  border: none;
+  outline: none;
+  background-color: #ffffff;
+  border-radius: 30px;
+  resize: vertical;
+  font-family: inherit;
+  font-size: 14px;
 }
 
-.contact_section .contact-form input::-webkit-input-placeholder {
+.contact_section .contact-form input::-webkit-input-placeholder,
+.contact_section .contact-form textarea::-webkit-input-placeholder {
   color: #151515;
 }
 
-.contact_section .contact-form input:-ms-input-placeholder {
+.contact_section .contact-form input:-ms-input-placeholder,
+.contact_section .contact-form textarea:-ms-input-placeholder {
   color: #151515;
 }
 
-.contact_section .contact-form input::-ms-input-placeholder {
+.contact_section .contact-form input::-ms-input-placeholder,
+.contact_section .contact-form textarea::-ms-input-placeholder {
   color: #151515;
 }
 
-.contact_section .contact-form input::placeholder {
+.contact_section .contact-form input::placeholder,
+.contact_section .contact-form textarea::placeholder {
   color: #151515;
 }
 
@@ -826,7 +842,6 @@ a:focus {
   width: 100%;
 }
 
-/* end contact section */
 .info_section {
   background-color: #121111;
   color: #ffffff;
@@ -901,7 +916,6 @@ a:focus {
   color: #4bc5b8;
 }
 
-/* footer section*/
 .footer_section {
   background-color: #121111;
   font-weight: 500;
@@ -924,6 +938,3 @@ a:focus {
 .footer_section a {
   color: #787878;
 }
-
-/* end footer section*/
-/*# sourceMappingURL=style.css.map */

@@ -1,103 +1,78 @@
-<!-- info section -->
+
 <section class="info_section layout_padding">
     <div class="container">
         <div class="row">
-        <div class="col-md-3">
-            <div class="info_menu">
-            <h5>
-                QUICK LINKS
-            </h5>
-            <ul class="navbar-nav  ">
-                <li class="nav-item <%= currentPath === '/' ? 'active' : '' %>">
-                    <a class="nav-link" href="/">Home 
-                        <% if (currentPath === '/') { %>
-                            <span class="sr-only">(current)</span>
+            <div class="col-md-3">
+                <div class="info_menu">
+                    <h5>QUICK LINKS</h5>
+
+                    <ul class="navbar-nav">
+                        <li class="nav-item <%= currentPath === '/' ? 'active' : '' %>">
+                            <a class="nav-link" href="/">Home</a>
+                        </li>
+
+                        <li class="nav-item <%= currentPath === '/gradebook' ? 'active' : '' %>">
+                            <a class="nav-link" href="/gradebook">Gradebook</a>
+                        </li>
+
+                        <li class="nav-item <%= currentPath === '/stats' ? 'active' : '' %>">
+                            <a class="nav-link" href="/stats">Statistics</a>
+                        </li>
+
+                        <li class="nav-item <%= currentPath === '/contact' ? 'active' : '' %>">
+                            <a class="nav-link" href="/contact">Contact</a>
+                        </li>
+
+                        <% if (user) { %>
+                            <li class="nav-item <%= currentPath === '/feedback' ? 'active' : '' %>">
+                                <a class="nav-link" href="/feedback">Messages</a>
+                            </li>
                         <% } %>
-                    </a>
-                </li>
-                <li class="nav-item <%= currentPath === '/gradebook' ? 'active' : '' %>">
-                    <a class="nav-link" href="/gradebook"> Gradebook 
-                        <% if (currentPath === '/gradebook') { %>
-                            <span class="sr-only">(current)</span>
+
+                        <% if (user && user.role === "admin") { %>
+                            <li class="nav-item <%= currentPath === '/manage-grades' ? 'active' : '' %>">
+                                <a class="nav-link" href="/manage-grades">Manage Grades</a>
+                            </li>
                         <% } %>
-                    </a>
-                </li>
-                <% if(user){ %>
-                    <li class="nav-item <%= currentPath === '/feedback' ? 'active' : '' %>">
-                        <a class="nav-link" href="/feedback"> Feedback 
-                            <% if (currentPath === '/feedback') { %>
-                                <span class="sr-only">(current)</span>
-                            <% } %>
-                        </a>
-                    </li>
-                <% } %>
-                <% if(user && user.role=="admin"){ %>
-                    <li class="nav-item <%= currentPath === '/manage-grades' ? 'active' : '' %>">
-                        <a class="nav-link" href="/manage-grades"> Manage grades 
-                            <% if (currentPath === '/manageGrades') { %>
-                                <span class="sr-only">(current)</span>
-                            <% } %>
-                        </a>
-                    </li>
-                <% } %>
-                <li class="nav-item <%= currentPath === '/stats' ? 'active' : '' %>">
-                    <a class="nav-link" href="/stats">Stats 
-                        <% if (currentPath === '/stats') { %>
-                            <span class="sr-only">(current)</span>
-                        <% } %>
-                    </a>
-                </li>
-                <li class="nav-item <%= currentPath === '/contact' ? 'active' : '' %>">
-                    <a class="nav-link" href="/contact">Contact us 
-                        <% if (currentPath === '/contact') { %>
-                            <span class="sr-only">(current)</span>
-                        <% } %>
-                    </a>
-                </li>           
-            </ul>
+                    </ul>
+                </div>
             </div>
-        </div>
-        <div class="col-md-3">
-            <div class="info_course">
-            <h5>
-                Welcome to e-crayon
-            </h5>
-            <p>
-                the place where grades live, students tremble, and subjects wonder why they exist.
-                We store all the data in the cloud, because our laptops are already crying from running Node, Mongo, and Opera at the same time.
-                Browse the tables, admire the charts, and remember: it's not a bug, it's an undocumented feature.
-            </p>
+
+            <div class="col-md-3">
+                <div class="info_course">
+                    <h5>Welcome to E-Crayon</h5>
+                    <p>
+                        E-Crayon is an electronic gradebook application
+                        for managing students, subjects and grades.
+                        Browse academic records and explore grade statistics.
+                    </p>
+                </div>
             </div>
-        </div>
-    
-        <div class="col-md-5 offset-md-1">
-            <div class="info_news">
-                <h5>
-                    MADE BY
-                </h5>
-                <div class="info_contact">
-                    <a href="https://github.com/matadominik" target="_blank">
-                        Mata László Dominik (matadominik - B223VA)
-                    </a>
-                    <a href="https://github.com/Bencuska0812" target="_blank">
-                        Fazekas Bence (Bencuska0812 - ZK6FMO)
-                    </a>
+
+            <div class="col-md-5 offset-md-1">
+                <div class="info_news">
+                    <h5>PROJECT AUTHORS</h5>
+
+                    <div class="info_contact">
+                        <a href="https://github.com/matadominik" target="_blank" rel="noopener noreferrer">
+                            Mata László Dominik (matadominik - B223VA)
+                        </a>
+
+                        <a href="https://github.com/Bencuska0812" target="_blank" rel="noopener noreferrer">
+                            Fazekas Bence (Bencuska0812 - ZK6FMO)
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- end info section -->
-
-<!-- footer section -->
 <footer class="container-fluid footer_section">
     <p>
-        &copy; 2026 Proudly submitted just in time by
-        <a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ" target="_blank" style="text-decoration: underline;">us</a>
+        &copy; 2026 E-Crayon. All rights reserved.
     </p>
 </footer>
-<!-- footer section -->
 
 <script type="text/javascript" src="/js/jquery-3.4.1.min.js"></script>
 <script type="text/javascript" src="/js/bootstrap.js"></script>

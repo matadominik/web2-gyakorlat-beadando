@@ -1,82 +1,68 @@
-<!-- <body>
-    <nav>
-        <a href="/">Home</a>
-        <% if(user){ %><a href="/user">User</a> <% } %>
-        <% if(user && user.role=="admin"){ %><a href="/admin">Admin</a> <% } %>
-        <% if(!user){ %><a href="/login">Login</a> <a href="/register">Register</a> <% }else{ %>
-        <%= user.username %> <a href="/logout">Logout</a> <% } %>
-    </nav>
-    <hr> -->
 
 <header class="header_section">
     <div class="container-fluid">
-        <nav class="navbar navbar-expand-lg custom_nav-container ">
+        <nav class="navbar navbar-expand-lg custom_nav-container">
             <a class="navbar-brand" href="/">
-                <h3>
-                    E-Crayon
-                </h3>
-                <span> classroom</span>
+                <h3>E-Crayon</h3>
+                <span>classroom</span>
             </a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+
+            <button class="navbar-toggler" type="button"
+                    data-toggle="collapse"
+                    data-target="#navbarSupportedContent"
+                    aria-controls="navbarSupportedContent"
+                    aria-expanded="false"
+                    aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
             <div class="collapse navbar-collapse ml-auto" id="navbarSupportedContent">
-                <ul class="navbar-nav  ml-auto">
+                <ul class="navbar-nav ml-auto">
+
                     <li class="nav-item <%= currentPath === '/' ? 'active' : '' %>">
-                        <a class="nav-link" href="/">Home 
-                            <% if (currentPath === '/') { %>
-                                <span class="sr-only">(current)</span>
-                            <% } %>
-                        </a>
+                        <a class="nav-link" href="/">Home</a>
                     </li>
+
                     <li class="nav-item <%= currentPath === '/gradebook' ? 'active' : '' %>">
-                        <a class="nav-link" href="/gradebook"> Gradebook 
-                            <% if (currentPath === '/gradebook') { %>
-                                <span class="sr-only">(current)</span>
-                            <% } %>
-                        </a>
+                        <a class="nav-link" href="/gradebook">Gradebook</a>
                     </li>
-                    <% if(user){ %>
-                        <li class="nav-item <%= currentPath === '/feedback' ? 'active' : '' %>">
-                            <a class="nav-link" href="/feedback"> Feedback 
-                                <% if (currentPath === '/feedback') { %>
-                                    <span class="sr-only">(current)</span>
-                                <% } %>
-                            </a>
-                        </li>
-                    <% } %>
-                    <% if(user && user.role=="admin"){ %>
-                        <li class="nav-item <%= currentPath === '/manage-grades' ? 'active' : '' %>">
-                            <a class="nav-link" href="/manage-grades"> Manage grades 
-                                <% if (currentPath === '/manageGrades') { %>
-                                    <span class="sr-only">(current)</span>
-                                <% } %>
-                            </a>
-                        </li>
-                    <% } %>
+
                     <li class="nav-item <%= currentPath === '/stats' ? 'active' : '' %>">
-                        <a class="nav-link" href="/stats">Stats 
-                            <% if (currentPath === '/stats') { %>
-                                <span class="sr-only">(current)</span>
-                            <% } %>
-                        </a>
+                        <a class="nav-link" href="/stats">Statistics</a>
                     </li>
+
                     <li class="nav-item <%= currentPath === '/contact' ? 'active' : '' %>">
-                        <a class="nav-link" href="/contact">Contact us 
-                            <% if (currentPath === '/contact') { %>
-                                <span class="sr-only">(current)</span>
-                            <% } %>
-                        </a>
+                        <a class="nav-link" href="/contact">Contact</a>
                     </li>
-                    <li class="nav-item">
-                        <% if(!user){ %><li class="nav-item <%= currentPath === '/login' ? 'active' : '' %>"><a class="nav-link" href="/login">Login
-                            <% if (currentPath === '/login') { %>
-                                <span class="sr-only">(current)</span>
-                            <% } %>
-                        </a></li><% }else{ %>
-                        <li class="nav-item"><a class="nav-link" href="/logout">Logout</a></li><li class="nav-item"><a class="nav-link" href=""><%= user.username %></a></li> <% } %>
-                    </li>
+
+                    <% if (user) { %>
+                        <li class="nav-item <%= currentPath === '/feedback' ? 'active' : '' %>">
+                            <a class="nav-link" href="/feedback">Messages</a>
+                        </li>
+
+                        <% if (user.role === "admin") { %>
+                            <li class="nav-item <%= currentPath === '/manage-grades' ? 'active' : '' %>">
+                                <a class="nav-link" href="/manage-grades">Manage Grades</a>
+                            </li>
+                        <% } %>
+
+                        <li class="nav-item">
+                            <a class="nav-link" href="/logout">Logout</a>
+                        </li>
+
+                        <li class="nav-item">
+                            <span class="nav-link"><%= user.username %></span>
+                        </li>
+                    <% } else { %>
+                        <li class="nav-item <%= currentPath === '/login' ? 'active' : '' %>">
+                            <a class="nav-link" href="/login">Login</a>
+                        </li>
+
+                        <li class="nav-item <%= currentPath === '/register' ? 'active' : '' %>">
+                            <a class="nav-link" href="/register">Register</a>
+                        </li>
+                    <% } %>
+
                 </ul>
             </div>
         </nav>

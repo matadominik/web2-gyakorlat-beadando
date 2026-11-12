@@ -1,75 +1,67 @@
+
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-  <!-- Basic -->
-  <meta charset="utf-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <!-- Mobile Metas -->
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-  <!-- Site Metas -->
-  <meta name="keywords" content="" />
-  <meta name="description" content="" />
-  <meta name="author" content="" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
 
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>Messages - E-Crayon</title>
 
-  <title>Feedback</title>
-
-  <!-- bootstrap core css -->
-  <link rel="stylesheet" type="text/css" href="css/bootstrap.css" />
-  <!-- fonts style -->
-  <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,700|Poppins:400,600,700&display=swap" rel="stylesheet" />
-  <!-- Custom styles for this template -->
-  <link href="css/style.css" rel="stylesheet" />
-  <!-- responsive style -->
-  <link href="css/responsive.css" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/bootstrap.css" />
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,700|Poppins:400,600,700&display=swap" rel="stylesheet" />
+    <link href="/css/style.css" rel="stylesheet" />
+    <link href="/css/responsive.css" rel="stylesheet" />
 </head>
 
 <body class="sub_page">
-  <div class="hero_area">
+    <div class="hero_area">
         <%- include("partials/header") %>
-  </div>
-
-  <!-- event section -->
-  <section class="event_section layout_padding">
-    <div class="container">
-      <div class="heading_container">
-        <h3>
-          Feedback
-        </h3>
-        <p>
-          Read these lovely messages.
-        </p>
-      </div>
-      <div class="event_container">
-        <% if (messages.length === 0) { %>
-          <p>No messages yet.</p>
-        <% } else { %>
-          <% messages.forEach(m => { %>
-            <div class="box">
-              <div class="img-box">
-                <img src="images/event-img.jpg" alt="" />
-              </div>
-              <div class="detail-box">
-                <h4>
-                  <%= m.name %> sent this:
-                </h4>
-                <p>
-                  <%= m.message %>
-                </p>
-              </div>
-            </div>
-          <% }); %>
-        <% } %>
-      </div>
     </div>
-  </section>
 
-  <!-- end event section -->
+    <section class="event_section layout_padding">
+        <div class="container">
+            <div class="heading_container">
+                <h3>Messages</h3>
+                <p>Messages submitted through the contact form.</p>
+            </div>
 
-  <%- include("partials/footer") %>
+            <div class="event_container">
+                <% if (!messages || messages.length === 0) { %>
+                    <p>No messages have been received yet.</p>
+                <% } else { %>
+                    <% messages.forEach(m => { %>
+                        <div class="box">
+                            <div class="img-box">
+                                <img src="/images/event-img.jpg" alt="Message" />
+                            </div>
 
+                            <div class="detail-box">
+                                <h4>
+                                    Message from <%= m.name %>
+                                </h4>
+
+                                <p><%= m.message %></p>
+
+                                <p>
+                                    <strong>Email:</strong>
+                                    <%= m.email %>
+                                </p>
+
+                                <% if (m.createdAt) { %>
+                                    <p>
+                                        <strong>Date:</strong>
+                                        <%= new Date(m.createdAt).toLocaleString("en-GB") %>
+                                    </p>
+                                <% } %>
+                            </div>
+                        </div>
+                    <% }); %>
+                <% } %>
+            </div>
+        </div>
+    </section>
+
+    <%- include("partials/footer") %>
 </body>
-
 </html>

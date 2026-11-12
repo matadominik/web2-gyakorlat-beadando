@@ -1,183 +1,150 @@
+
 <!DOCTYPE html>
-<html>
-    <head>
-    <!-- Basic -->
+<html lang="en">
+<head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <!-- Mobile Metas -->
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-    <!-- Site Metas -->
-    <meta name="keywords" content="" />
-    <meta name="description" content="" />
-    <meta name="author" content="" />
+    <meta name="description" content="E-Crayon - Electronic Gradebook" />
+    <meta name="author" content="E-Crayon" />
 
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    
-    <title>Home</title>
-    
-    <!-- bootstrap core css -->
-    <link rel="stylesheet" type="text/css" href="css/bootstrap.css" />
-    <!-- fonts style -->
+    <title>Home - E-Crayon</title>
+
+    <link rel="stylesheet" href="/css/bootstrap.css" />
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,700|Poppins:400,600,700&display=swap" rel="stylesheet" />
-    <!-- Custom styles for this template -->
-    <link href="css/style.css" rel="stylesheet" />
-    <!-- responsive style -->
-    <link href="css/responsive.css" rel="stylesheet" />
-    </head>
-    
-    <body>
+    <link href="/css/style.css" rel="stylesheet" />
+    <link href="/css/responsive.css" rel="stylesheet" />
+</head>
+
+<body>
     <div class="hero_area">
         <%- include("partials/header") %>
-        <!-- slider section -->
-        <section class=" slider_section position-relative">
-        <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">
-            <ol class="carousel-indicators">
-            <li data-target="#carouselExampleIndicators" data-slide-to="0" class="active"></li>
-            <li data-target="#carouselExampleIndicators" data-slide-to="1"></li>
-            <li data-target="#carouselExampleIndicators" data-slide-to="2"></li>
-            </ol>
-            <div class="carousel-inner">
-            <div class="carousel-item active">
-                <div class="container">
-                <div class="row">
-                    <div class="col">
-                    <div class="detail-box">
-                        <div>
-                            <h1>
-                                E D U C A T I O N
-                            </h1>
+
+        <section class="slider_section position-relative">
+            <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">
+                <ol class="carousel-indicators">
+                    <li data-target="#carouselExampleIndicators" data-slide-to="0" class="active"></li>
+                    <li data-target="#carouselExampleIndicators" data-slide-to="1"></li>
+                    <li data-target="#carouselExampleIndicators" data-slide-to="2"></li>
+                </ol>
+
+                <div class="carousel-inner">
+                    <div class="carousel-item active">
+                        <div class="container">
+                            <div class="row">
+                                <div class="col">
+                                    <div class="detail-box">
+                                        <h1>E D U C A T I O N</h1>
+                                        <p>Welcome to E-Crayon</p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    </div>
-                </div>
-                </div>
-            </div>
-            <div class="carousel-item ">
-                <div class="container">
-                <div class="row">
-                    <div class="col">
-                    <div class="detail-box">
-                        <div>
-                            <h1>
-                                S C O R E S
-                            </h1>
-                            <a href="/gradebook">
-                                Read More
-                            </a>
+
+                    <div class="carousel-item">
+                        <div class="container">
+                            <div class="row">
+                                <div class="col">
+                                    <div class="detail-box">
+                                        <h1>S C O R E S</h1>
+                                        <a href="/gradebook">View Gradebook</a>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    </div>
-                </div>
-                </div>
-            </div>
-            <div class="carousel-item ">
-                <div class="container">
-                <div class="row">
-                    <div class="col">
-                    <div class="detail-box">
-                        <div>
-                            <h1>
-                                S T A T S
-                            </h1>
-                            <a href="/stats">
-                                Read More
-                            </a>
+
+                    <div class="carousel-item">
+                        <div class="container">
+                            <div class="row">
+                                <div class="col">
+                                    <div class="detail-box">
+                                        <h1>S T A T S</h1>
+                                        <a href="/stats">View Statistics</a>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    </div>
-                </div>
                 </div>
             </div>
-            </div>
-        </div>
         </section>
-        <!-- end slider section -->
     </div>
-    
-    <!-- special section -->
-    
+
     <section class="special_section">
         <div class="container">
-        <div class="special_container">
-            <div class="box b1">
-            <div class="img-box">
-                <img src="images/award.png" alt="" />
+            <div class="special_container">
+                <div class="box b1">
+                    <div class="img-box">
+                        <img src="/images/award.png" alt="Award" />
+                    </div>
+                    <div class="detail-box">
+                        <h4>YOUR <br />DIGITAL GRADEBOOK</h4>
+                    </div>
+                </div>
+
+                <div class="box b2">
+                    <div class="img-box">
+                        <img src="/images/study.png" alt="Study" />
+                    </div>
+                    <div class="detail-box">
+                        <h4>CHECK <br />YOUR GRADES ONLINE</h4>
+                    </div>
+                </div>
+
+                <div class="box b3">
+                    <div class="img-box">
+                        <img src="/images/books-stack-of-three.png" alt="Books" />
+                    </div>
+                    <div class="detail-box">
+                        <h4>STUDENT <br />PROGRESS TRACKING</h4>
+                    </div>
+                </div>
             </div>
-            <div class="detail-box">
-                <h4>
-                BEST <br />
-                GRADEBOOK IN TOWN
-                </h4>
-            </div>
-            </div>
-            <div class="box b2">
-            <div class="img-box">
-                <img src="images/study.png" alt="" />
-            </div>
-            <div class="detail-box">
-                <h4>
-                CHECK <br />
-                YOUR GRADES ONLINE
-                </h4>
-            </div>
-            </div>
-            <div class="box b3">
-            <div class="img-box">
-                <img src="images/books-stack-of-three.png" alt="" />
-            </div>
-            <div class="detail-box">
-                <h4>
-                FRESH <br />
-                DATA, NO DRAMA
-                </h4>
-            </div>
-            </div>
-        </div>
         </div>
     </section>
-    
-    <!-- end special section -->
-    
-    <!-- about section -->
+
     <section class="about_section layout_padding">
         <div class="side_img">
-        <img src="images/side-img.png" alt="" />
+            <img src="/images/side-img.png" alt="" />
         </div>
+
         <div class="container">
-        <div class="row">
-            <div class="col-md-6">
-            <div class="img_container">
-                <div class="img-box b1">
-                <img src="images/a-1.jpg" alt="" />
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="img_container">
+                        <div class="img-box b1">
+                            <img src="/images/a-1.jpg" alt="Education" />
+                        </div>
+                        <div class="img-box b2">
+                            <img src="/images/a-2.jpg" alt="Learning" />
+                        </div>
+                    </div>
                 </div>
-                <div class="img-box b2">
-                <img src="images/a-2.jpg" alt="" />
+
+                <div class="col-md-6">
+                    <div class="detail-box">
+                        <div class="heading_container">
+                            <h3>About Our Project</h3>
+                            <p>
+                                E-Crayon is an electronic gradebook application
+                                designed to manage students, subjects and grades.
+                                It provides an overview of academic records,
+                                grade statistics and communication features.
+                            </p>
+                            <p>
+                                The application is built with Node.js, Express,
+                                MongoDB and EJS.
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </div>
-            </div>
-            <div class="col-md-6">
-            <div class="detail-box">
-                <div class="heading_container">
-                <h3>
-                    About Our Project
-                </h3>
-                <p>
-                    We found this spectacular pre-made theme and built 
-                    one of the given databases around it.
-                    We kept it simple and efficient, because there is 
-                    always another assignment waiting.
-                </p>
-                </div>
-            </div>
-            </div>
-        </div>
         </div>
     </section>
-    
-    <!-- end about section -->
-        
+
     <%- include("partials/footer") %>
-    
-    
-    </body>
+</body>
 </html>

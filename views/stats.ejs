@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
-<html lang="hu">
+<html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Statisztikák - E-Crayon</title>
+    <title>Statistics - E-Crayon</title>
 
     <link rel="stylesheet" href="/css/bootstrap.css" />
     <link rel="stylesheet" href="/css/style.css" />
@@ -19,13 +19,13 @@
     </div>
 
     <div class="container py-5">
-        <h1 class="mb-3">Jegystatisztikák</h1>
-        <p>Az adatbázisban rögzített érdemjegyek összesítése.</p>
+        <h1 class="mb-3">Grade Statistics</h1>
+        <p>Overview of grades stored in the database.</p>
 
         <div class="row mb-4">
             <div class="col-md-4">
                 <div class="card p-3 text-center">
-                    <h5>Összes rögzített jegy</h5>
+                    <h5>Total Recorded Grades</h5>
                     <h2><%= totalGrades %></h2>
                 </div>
             </div>
@@ -33,12 +33,12 @@
 
         <% if (totalGrades === 0) { %>
             <div class="alert alert-info">
-                Jelenleg még nincs elegendő adat a statisztika megjelenítéséhez.
+                There is currently no data available for the statistics.
             </div>
         <% } %>
 
         <div class="card p-4">
-            <h4 class="mb-3">Jegyek eloszlása</h4>
+            <h4 class="mb-3">Grade Distribution</h4>
             <div style="position: relative; height: 350px;">
                 <canvas id="gradeChart"></canvas>
             </div>
@@ -55,9 +55,15 @@
         new Chart(ctx, {
             type: "bar",
             data: {
-                labels: ["Elégtelen (1)", "Elégséges (2)", "Közepes (3)", "Jó (4)", "Jeles (5)"],
+                labels: [
+                    "Fail (1)",
+                    "Pass (2)",
+                    "Satisfactory (3)",
+                    "Good (4)",
+                    "Excellent (5)"
+                ],
                 datasets: [{
-                    label: "Jegyek száma",
+                    label: "Number of Grades",
                     data: gradeCounts,
                     backgroundColor: [
                         "#dc3545",
@@ -80,7 +86,7 @@
                         },
                         title: {
                             display: true,
-                            text: "Jegyek darabszáma"
+                            text: "Number of Grades"
                         }
                     }
                 },
@@ -90,7 +96,7 @@
                     },
                     title: {
                         display: true,
-                        text: "Érdemjegyek eloszlása"
+                        text: "Grade Distribution"
                     }
                 }
             }

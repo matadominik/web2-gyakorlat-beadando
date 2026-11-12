@@ -1,24 +1,13 @@
+
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-
-<!-- <% if(message){ %><p class="message"><%= message %></p><% } %> -->
-
-<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-
-<title>Manage grades</title>
-
-<!-- bootstrap core css -->
-<link rel="stylesheet" type="text/css" href="css/bootstrap.css" />
-<!-- fonts style -->
-<link href="https://fonts.googleapis.com/css?family=Open+Sans:400,700|Poppins:400,600,700&display=swap" rel="stylesheet" />
-<!-- Custom styles for this template -->
-<link href="css/style.css" rel="stylesheet" />
-<!-- responsive style -->
-<link href="css/responsive.css" rel="stylesheet" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Jegyek kezelése</title>
+    <link rel="stylesheet" href="/css/bootstrap.css" />
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/responsive.css" />
 </head>
 
 <body class="sub_page">
@@ -26,10 +15,136 @@
         <%- include("partials/header") %>
     </div>
 
-    <h1>manage grades</h1>
-    <p>for admins only.</p>
+    <div class="container py-5">
+        <h1 class="mb-4">Jegyek kezelése</h1>
 
-  <%- include("partials/footer") %>
+        <% if (message) { %>
+            <div class="alert alert-info"><%= message %></div>
+        <% } %>
 
+        <h3><%= editGrade ? "Jegy módosítása" : "Új jegy rögzítése" %></h3>
+
+        <form action="<%= editGrade ? '/manage-grades/update' : '/manage-grades/create' %>"
+              method="POST" class="mb-5">
+
+            <% if (editGrade) { %>
+                <input type="hidden" name="id" value="<%= editGrade._id %>">
+            <% } %>
+
+            <div class="form-group mb-3">
+                <label>Tanuló</label>
+                <select name="student" class="form-control" required>
+                    <option value="">Válassz tanulót!</option>
+                    <% students.forEach(student => { %>
+                        <option value="<%= student._id %>"
+                            <%= editGrade && editGrade.student.toString() === student._id.toString() ? "selected" : "" %>>
+                            <%= student.name %> (<%= student.className %>)
+                        </option>
+                    <% }) %>
+                </select>
+            </div>
+
+            <div class="form-group mb-3">
+                <label>Tantárgy</label>
+                <select name="subject" class="form-control" required>
+                    <option value="">Válassz tantárgyat!</option>
+                    <% subjects.forEach(subject => { %>
+                        <option value="<%= subject._id %>"
+                            <%= editGrade && editGrade.subject.toString() === subject._id.toString() ? "selected" : "" %>>
+                            <%= subject.name %>
+                        </option>
+                    <% }) %>
+                </select>
+            </div>
+
+            <div class="form-group mb-3">
+                <label>Érdemjegy (1–5)</label>
+                <input type="number" name="value" class="form-control"
+                    min="1" max="5" required
+                    value="<%= editGrade ? editGrade.value : '' %>">
+            </div>
+
+            <div class="form-group mb-3">
+                <label>Jegy típusa</label>
+                <input type="text" name="type" class="form-control"
+                    required placeholder="Például: Dolgozat"
+                    value="<%= editGrade ? editGrade.type : '' %>">
+            </div>
+
+            <div class="form-group mb-3">
+                <label>Dátum</label>
+                <input type="date" name="date" class="form-control"
+                    value="<%= editGrade && editGrade.date ? new Date(editGrade.date).toISOString().slice(0, 10) : '' %>">
+            </div>
+
+            <div class="form-group mb-3">
+                <label>Megjegyzés</label>
+                <input type="text" name="note" class="form-control"
+                    value="<%= editGrade ? editGrade.note : '' %>">
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+                <%= editGrade ? "Módosítás mentése" : "Jegy rögzítése" %>
+            </button>
+
+            <% if (editGrade) { %>
+                <a href="/manage-grades" class="btn btn-secondary">Mégse</a>
+            <% } %>
+        </form>
+
+        <hr>
+
+        <h3 class="mb-3">Rögzített jegyek</h3>
+
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>Tanuló</th>
+                        <th>Osztály</th>
+                        <th>Tantárgy</th>
+                        <th>Jegy</th>
+                        <th>Típus</th>
+                        <th>Dátum</th>
+                        <th>Megjegyzés</th>
+                        <th>Műveletek</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (grades.length === 0) { %>
+                        <tr>
+                            <td colspan="8">Még nincs rögzített jegy.</td>
+                        </tr>
+                    <% } %>
+
+                    <% grades.forEach(grade => { %>
+                        <tr>
+                            <td><%= grade.student ? grade.student.name : "Ismeretlen" %></td>
+                            <td><%= grade.student ? grade.student.className : "-" %></td>
+                            <td><%= grade.subject ? grade.subject.name : "Ismeretlen" %></td>
+                            <td><%= grade.value %></td>
+                            <td><%= grade.type %></td>
+                            <td><%= grade.date ? new Date(grade.date).toLocaleDateString("hu-HU") : "-" %></td>
+                            <td><%= grade.note || "-" %></td>
+                            <td>
+                                <a href="/manage-grades?edit=<%= grade._id %>"
+                                   class="btn btn-sm btn-warning mb-1">Módosítás</a>
+
+                                <form action="/manage-grades/delete" method="POST"
+                                      onsubmit="return confirm('Biztosan törlöd ezt a jegyet?');">
+                                    <input type="hidden" name="id" value="<%= grade._id %>">
+                                    <button type="submit" class="btn btn-sm btn-danger">
+                                        Törlés
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <%- include("partials/footer") %>
 </body>
 </html>

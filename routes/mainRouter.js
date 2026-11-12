@@ -22,4 +22,7 @@ router.post("/contact", controller.contactPost);
 router.get("/stats", controller.statsIndex);
 router.get("/feedback", isLoggedIn, controller.feedbackIndex);
 router.get("/manage-grades", isAdmin, controller.manageGradesIndex);
+router.post("/manage-grades/create", isAdmin, controller.gradeCreate);
+router.post("/manage-grades/update", isAdmin, controller.gradeUpdate);
+router.post("/manage-grades/delete", isAdmin, controller.gradeDelete);s
 module.exports = router;

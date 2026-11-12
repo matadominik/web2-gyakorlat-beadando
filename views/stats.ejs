@@ -1,24 +1,16 @@
+
 <!DOCTYPE html>
-<html>
+<html lang="hu">
 <head>
-  <meta charset="utf-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Statisztikák - E-Crayon</title>
 
-<!-- <% if(message){ %><p class="message"><%= message %></p><% } %> -->
+    <link rel="stylesheet" href="/css/bootstrap.css" />
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/responsive.css" />
 
-<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-
-<title>Stats</title>
-
-<!-- bootstrap core css -->
-<link rel="stylesheet" type="text/css" href="css/bootstrap.css" />
-<!-- fonts style -->
-<link href="https://fonts.googleapis.com/css?family=Open+Sans:400,700|Poppins:400,600,700&display=swap" rel="stylesheet" />
-<!-- Custom styles for this template -->
-<link href="css/style.css" rel="stylesheet" />
-<!-- responsive style -->
-<link href="css/responsive.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body class="sub_page">
@@ -26,10 +18,83 @@
         <%- include("partials/header") %>
     </div>
 
-    <h1>stats</h1>
-    <p>available to anyone</p>
+    <div class="container py-5">
+        <h1 class="mb-3">Jegystatisztikák</h1>
+        <p>Az adatbázisban rögzített érdemjegyek összesítése.</p>
 
-  <%- include("partials/footer") %>
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card p-3 text-center">
+                    <h5>Összes rögzített jegy</h5>
+                    <h2><%= totalGrades %></h2>
+                </div>
+            </div>
+        </div>
 
+        <% if (totalGrades === 0) { %>
+            <div class="alert alert-info">
+                Jelenleg még nincs elegendő adat a statisztika megjelenítéséhez.
+            </div>
+        <% } %>
+
+        <div class="card p-4">
+            <h4 class="mb-3">Jegyek eloszlása</h4>
+            <div style="position: relative; height: 350px;">
+                <canvas id="gradeChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <%- include("partials/footer") %>
+
+    <script>
+        const gradeCounts = JSON.parse('<%- JSON.stringify(gradeCounts || [0, 0, 0, 0, 0]) %>');
+
+        const ctx = document.getElementById("gradeChart");
+
+        new Chart(ctx, {
+            type: "bar",
+            data: {
+                labels: ["Elégtelen (1)", "Elégséges (2)", "Közepes (3)", "Jó (4)", "Jeles (5)"],
+                datasets: [{
+                    label: "Jegyek száma",
+                    data: gradeCounts,
+                    backgroundColor: [
+                        "#dc3545",
+                        "#fd7e14",
+                        "#ffc107",
+                        "#0d6efd",
+                        "#198754"
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        },
+                        title: {
+                            display: true,
+                            text: "Jegyek darabszáma"
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    title: {
+                        display: true,
+                        text: "Érdemjegyek eloszlása"
+                    }
+                }
+            }
+        });
+    </script>
 </body>
 </html>

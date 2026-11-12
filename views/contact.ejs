@@ -56,13 +56,14 @@
                 </h5>
                 <form method="POST">
                     <div>
-                        <input name="fullName" type="text" placeholder="Full Name " />
+                        <input name="fullName" type="text" placeholder="Teljes név" minlength="3" maxlength="100" required />
                     </div>
                     <div>
-                        <input name="emailAddress" type="email" placeholder="Email Address" />
+                        <input name="emailAddress" type="email" placeholder="E-mail-cím" maxlength="254" required />
                     </div>
                     <div>
-                        <input name="inputMessage" type="text" placeholder="Message" class="input_message" />
+                       <textarea name="inputMessage" placeholder="Üzenet" minlength="10" maxlength="2000"
+          required class="input_message"></textarea>
                     </div>
                     <% if(message){ %><p style="margin-bottom: 0; color: white; text-align: center;"><%= message %></p><% } %>
                     <div class="d-flex justify-content-center">

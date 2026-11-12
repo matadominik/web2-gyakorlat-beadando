@@ -6,6 +6,7 @@ const bcrypt = require("bcrypt");
 const Student = require("../models/Student");
 const Subject = require("../models/Subject");
 const Grade = require("../models/Grade");
+const SchoolClass = require("../models/SchoolClass");
 
 exports.homeIndex = (req, res) => {
     res.render("home");
@@ -136,18 +137,18 @@ exports.manageGradesIndex = async (req, res) => {
     try {
         const students = await Student.find().sort({ name: 1 });
         const subjects = await Subject.find().sort({ name: 1 });
-
         const grades = await Grade.find()
             .populate("student")
             .populate("subject")
             .sort({ date: -1 });
-
-        const users = await User.find({ role: "user" })
+        const pendingUsers = await User.find({ role: "user", status: "pending" })
+            .populate("student")
+            .sort({ username: 1 });
+        const existingUsers = await User.find({ role: "user", status: { $ne: "pending" } })
             .populate("student")
             .sort({ username: 1 });
 
         let editGrade = null;
-
         if (req.query.edit) {
             editGrade = await Grade.findById(req.query.edit);
         }
@@ -157,7 +158,8 @@ exports.manageGradesIndex = async (req, res) => {
             subjects,
             grades,
             editGrade,
-            users
+            pendingUsers,
+            existingUsers
         });
     } catch (err) {
         console.error("Manage grades error:", err);
@@ -165,84 +167,120 @@ exports.manageGradesIndex = async (req, res) => {
     }
 };
 
-exports.linkStudent = async (req, res) => {
+exports.approveUser = async (req, res) => {
     try {
-        const { userId, studentId } = req.body;
-
-        if (!userId || !studentId) {
-            req.session.message = "Please select a user and a student.";
-            return res.redirect("/manage-grades");
-        }
-
         const user = await User.findOne({
-            _id: userId,
-            role: "user"
+            _id: req.body.userId,
+            role: "user",
+            status: "pending"
         });
 
-        const student = await Student.findById(studentId);
-
-        if (!user || !student) {
-            req.session.message = "User or student not found.";
+        if (!user) {
+            req.session.message = "Pending registration not found.";
             return res.redirect("/manage-grades");
         }
 
-       
-        const existingLink = await User.findOne({
-            student: studentId,
-            _id: { $ne: userId }
-        });
-
-        if (existingLink) {
-            req.session.message = "This student is already linked to another account.";
-            return res.redirect("/manage-grades");
-        }
-
-        user.student = student._id;
+        user.status = "approved";
         await user.save();
-
-        req.session.message = "Student account linked successfully!";
+        req.session.message = "Student registration approved successfully.";
         res.redirect("/manage-grades");
     } catch (err) {
-        console.error("Student linking error:", err);
-        req.session.message = "Failed to link student account.";
+        console.error("Approve user error:", err);
+        req.session.message = "Could not approve this registration.";
         res.redirect("/manage-grades");
     }
 };
 
-exports.registerGet = (req, res) => {
-    res.render("register");
+exports.rejectUser = async (req, res) => {
+    try {
+        const user = await User.findOne({
+            _id: req.body.userId,
+            role: "user",
+            status: "pending"
+        });
+
+        if (!user) {
+            req.session.message = "Pending registration not found.";
+            return res.redirect("/manage-grades");
+        }
+
+        user.status = "rejected";
+        await user.save();
+        req.session.message = "Student registration rejected.";
+        res.redirect("/manage-grades");
+    } catch (err) {
+        console.error("Reject user error:", err);
+        req.session.message = "Could not reject this registration.";
+        res.redirect("/manage-grades");
+    }
+};
+
+exports.registerGet = async (req, res) => {
+    try {
+        const classes = await SchoolClass.find().sort({ name: 1 });
+        res.render("register", { classes });
+    } catch (err) {
+        console.error("Registration page error:", err);
+        res.status(500).send("Could not load the registration page.");
+    }
 };
 
 exports.registerPost = async (req, res) => {
+    let createdStudent = null;
+
     try {
+        const fullName = String(req.body.fullName || "").trim();
+        const className = String(req.body.className || "").trim();
         const username = String(req.body.username || "").trim();
         const password = String(req.body.password || "");
 
-        if (!username || !password) {
-            req.session.message = "Registration failed. Please fill in all fields.";
+        if (fullName.length < 3 || fullName.length > 100 ||
+            username.length < 3 || username.length > 30 || password.length < 8 ||
+            !className) {
+            req.session.message = "Please provide a valid name, class, username and a password of at least 8 characters.";
+            return res.redirect("/register");
+        }
+
+        const selectedClass = await SchoolClass.findOne({ name: className });
+        if (!selectedClass) {
+            req.session.message = "Please select a valid class from the list.";
             return res.redirect("/register");
         }
 
         const existingUser = await User.findOne({ username });
-
         if (existingUser) {
             req.session.message = "This username already exists.";
             return res.redirect("/register");
         }
 
-        const hash = await bcrypt.hash(password, 10);
+        const bcryptHash = await bcrypt.hash(password, 12);
+        const crypto = require("crypto");
+        const studentId = `STU-${crypto.randomUUID()}`;
+
+        createdStudent = await Student.create({
+            studentId,
+            name: fullName,
+            className
+        });
 
         await User.create({
             username,
-            password: hash,
-            role: "user"
+            password: bcryptHash,
+            role: "user",
+            status: "pending",
+            student: createdStudent._id
         });
 
-        req.session.message = "Registration successful! You can now log in.";
+        req.session.message = "Registration submitted successfully. Please wait for administrator approval before logging in.";
         res.redirect("/login");
     } catch (err) {
+        if (createdStudent) {
+            await Student.findByIdAndDelete(createdStudent._id).catch(() => {});
+        }
         console.error("Registration error:", err);
-        req.session.message = "An error occurred during registration.";
+        req.session.message = err.code === 11000
+            ? "This username or student identifier is already in use. Please try again."
+            : "An error occurred during registration. Please try again.";
         res.redirect("/register");
     }
 };
@@ -270,6 +308,16 @@ exports.loginPost = async (req, res) => {
             return res.redirect("/login");
         }
 
+        if (user.status === "pending") {
+            req.session.message = "Your registration is waiting for administrator approval.";
+            return res.redirect("/login");
+        }
+
+        if (user.status === "rejected") {
+            req.session.message = "Your registration was not approved. Please contact the administrator.";
+            return res.redirect("/login");
+        }
+
         req.session.user = {
             id: user._id,
             username: user.username,
@@ -280,7 +328,7 @@ exports.loginPost = async (req, res) => {
             return res.redirect("/manage-grades");
         }
 
-        res.redirect("/feedback");
+        res.redirect("/gradebook");
     } catch (err) {
         console.error("Login error:", err);
         req.session.message = "An error occurred during login.";

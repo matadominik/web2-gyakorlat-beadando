@@ -1,0 +1,14 @@
+E-CRAYON – osztályok importálása MongoDB Atlas / Compass használatával
+
+1. Nyisd meg azt az adatbázist, amelyben a users, students, subjects és grades kollekciók vannak.
+2. Hozz létre egy új kollekciót pontosan ezen a néven: classes
+3. Nyisd meg a classes kollekciót.
+4. Válaszd az ADD DATA -> Import JSON lehetőséget.
+5. Importáld az ecrayon_classes.json fájlt JSON formátumban.
+6. A fájl 8 osztályt tartalmaz: 9.A, 9.B, 10.A, 10.B, 11.A, 11.B, 12.A, 12.B.
+
+A regisztráció a classes kollekcióból tölti be az osztálylistát. A kiválasztott osztály neve továbbra is a students.className mezőbe kerül.
+
+A projekt ZIP nem tartalmaz .env vagy .git mappát. A meglévő projekted .env és .git mappáját tartsd meg.
+A users, students, subjects és grades kollekciókat ne töröld és ne importáld újra.
+Csak a classes kollekciót kell egyszer létrehozni és feltölteni.

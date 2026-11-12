@@ -1,25 +1,18 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>Register - E-Crayon</title>
-
     <link rel="stylesheet" href="/css/bootstrap.css" />
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,700|Poppins:400,600,700&display=swap" rel="stylesheet" />
     <link href="/css/style.css" rel="stylesheet" />
     <link href="/css/responsive.css" rel="stylesheet" />
 </head>
-
 <body class="sub_page">
-    <div class="hero_area">
-        <%- include("partials/header") %>
-    </div>
-
+    <div class="hero_area"><%- include("partials/header") %></div>
     <section class="login_section layout_padding">
         <div class="container">
             <div class="row">
@@ -30,44 +23,36 @@
                         <a href="/login">LOGIN NOW</a>
                     </div>
                 </div>
-
                 <div class="col-md-6">
                     <div class="login_form">
-                        <h5>Create a New Account</h5>
-
+                        <h5>Create a Student Account</h5>
+                        <p>Your account will be available after administrator approval.</p>
                         <form method="POST" action="/register">
-                            <div>
-                                <input
-                                    name="username"
-                                    type="text"
-                                    placeholder="Username"
-                                    autocomplete="username"
-                                    required
-                                />
+                            <div class="form-group">
+                                <input name="fullName" type="text" placeholder="Full name" autocomplete="name" minlength="3" maxlength="100" required />
                             </div>
-
-                            <div>
-                                <input
-                                    name="password"
-                                    type="password"
-                                    placeholder="Password"
-                                    autocomplete="new-password"
-                                    required
-                                />
+                            <div class="form-group">
+                                <select name="className" class="form-control" required>
+                                    <option value="">Select your class</option>
+                                    <% classes.forEach(schoolClass => { %>
+                                        <option value="<%= schoolClass.name %>"><%= schoolClass.name %></option>
+                                    <% }) %>
+                                </select>
                             </div>
-
-                            <% if (message) { %>
-                                <p class="mt-2"><%= message %></p>
-                            <% } %>
-
-                            <button type="submit">Register</button>
+                            <div class="form-group">
+                                <input name="username" type="text" placeholder="Username" autocomplete="username" minlength="3" maxlength="30" required />
+                            </div>
+                            <div class="form-group">
+                                <input name="password" type="password" placeholder="Password (at least 8 characters)" autocomplete="new-password" minlength="8" required />
+                            </div>
+                            <% if (message) { %><p class="mt-2"><%= message %></p><% } %>
+                            <button type="submit">Submit Registration</button>
                         </form>
                     </div>
                 </div>
             </div>
         </div>
     </section>
-
     <%- include("partials/footer") %>
 </body>
 </html>

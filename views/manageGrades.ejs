@@ -24,74 +24,69 @@
         <% } %>
 
         <section class="mb-5">
-            <h3 class="mb-3">Link Student Accounts</h3>
-            <p>
-                Connect a registered user account to a student.
-                The student will then be able to see only their own grades.
-            </p>
+            <h3 class="mb-3">Pending Student Registrations</h3>
+            <p>Review new student accounts and approve or reject each registration.</p>
 
-            <form action="/manage-grades/link-student" method="POST">
-                <div class="form-group mb-3">
-                    <label for="userId">Registered User</label>
-                    <select name="userId" id="userId" class="form-control" required>
-                        <option value="">Select a user</option>
-
-                        <% users.forEach(user => { %>
-                            <option value="<%= user._id %>">
-                                <%= user.username %>
-                                <%= user.student ? "(Linked to: " + user.student.name + ")" : "(Not linked)" %>
-                            </option>
-                        <% }) %>
-                    </select>
-                </div>
-
-                <div class="form-group mb-3">
-                    <label for="studentId">Student</label>
-                    <select name="studentId" id="studentId" class="form-control" required>
-                        <option value="">Select a student</option>
-
-                        <% students.forEach(student => { %>
-                            <option value="<%= student._id %>">
-                                <%= student.name %> (<%= student.className %>)
-                            </option>
-                        <% }) %>
-                    </select>
-                </div>
-
-                <button type="submit" class="btn btn-success">
-                    Link Student Account
-                </button>
-            </form>
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>Full Name</th>
+                            <th>Class</th>
+                            <th>Username</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if (!pendingUsers || pendingUsers.length === 0) { %>
+                            <tr><td colspan="4">There are no pending registrations.</td></tr>
+                        <% } else { %>
+                            <% pendingUsers.forEach(pendingUser => { %>
+                                <tr>
+                                    <td><%= pendingUser.student ? pendingUser.student.name : "Student record missing" %></td>
+                                    <td><%= pendingUser.student ? pendingUser.student.className : "-" %></td>
+                                    <td><%= pendingUser.username %></td>
+                                    <td>
+                                        <form action="/manage-grades/approve-user" method="POST" class="d-inline">
+                                            <input type="hidden" name="userId" value="<%= pendingUser._id %>">
+                                            <button type="submit" class="btn btn-sm btn-success mb-1">Approve</button>
+                                        </form>
+                                        <form action="/manage-grades/reject-user" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to reject this registration?');">
+                                            <input type="hidden" name="userId" value="<%= pendingUser._id %>">
+                                            <button type="submit" class="btn btn-sm btn-danger mb-1">Reject</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
         </section>
 
         <hr>
 
-        <h3 class="mb-3">Current Student Account Links</h3>
-
+        <h3 class="mb-3">Student Accounts</h3>
         <div class="table-responsive mb-5">
             <table class="table table-bordered table-striped">
                 <thead>
                     <tr>
                         <th>Username</th>
-                        <th>Linked Student</th>
+                        <th>Student</th>
                         <th>Class</th>
+                        <th>Status</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <% if (!users || users.length === 0) { %>
-                        <tr>
-                            <td colspan="3">No registered student accounts found.</td>
-                        </tr>
+                    <% if (!existingUsers || existingUsers.length === 0) { %>
+                        <tr><td colspan="4">No approved or rejected student accounts found.</td></tr>
                     <% } else { %>
-                        <% users.forEach(user => { %>
+                        <% existingUsers.forEach(existingUser => { %>
                             <tr>
-                                <td><%= user.username %></td>
-                                <td>
-                                    <%= user.student ? user.student.name : "Not linked" %>
-                                </td>
-                                <td>
-                                    <%= user.student ? user.student.className : "-" %>
-                                </td>
+                                <td><%= existingUser.username %></td>
+                                <td><%= existingUser.student ? existingUser.student.name : "Not linked (legacy account)" %></td>
+                                <td><%= existingUser.student ? existingUser.student.className : "-" %></td>
+                                <td><%= existingUser.status || "approved" %></td>
                             </tr>
                         <% }) %>
                     <% } %>

@@ -14,23 +14,25 @@
                         <li class="nav-item <%= currentPath === '/database' ? 'active' : '' %>">
                             <a class="nav-link" href="/database">Database</a>
                         </li>
+                        <% if (user && user.role === "user") { %>
                         <li class="nav-item <%= currentPath === '/stats' ? 'active' : '' %>">
-                            <a class="nav-link" href="/stats">Diagram</a>
+                            <a class="nav-link" href="/stats">Statisztika</a>
                         </li>
+                        <% } %>
 
                         <li class="nav-item <%= currentPath === '/contact' ? 'active' : '' %>">
                             <a class="nav-link" href="/contact">Contact</a>
                         </li>
 
-                        <% if (user) { %>
+                        <% if (user && ["admin", "superadmin"].includes(user.role)) { %>
                             <li class="nav-item <%= currentPath === '/inbox' ? 'active' : '' %>">
-                                <a class="nav-link" href="/inbox">Messages</a>
+                                <a class="nav-link" href="/inbox">Contact Messages</a>
                             </li>
                         <% } %>
 
-                        <% if (user && ["teacher", "admin", "superadmin"].includes(user.role)) { %>
+                        <% if (user && user.role === "teacher") { %>
                             <li class="nav-item <%= currentPath === '/manage-grades' ? 'active' : '' %>">
-                                <a class="nav-link" href="/manage-grades"><%= user.role === "teacher" ? "Manage Grades" : "CRUD" %></a>
+                                <a class="nav-link" href="/manage-grades">Manage Grades</a>
                             </li>
                         <% } %>
                     </ul>

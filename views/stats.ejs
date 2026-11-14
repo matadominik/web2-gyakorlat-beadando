@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <title>Grade Statistics - E-Crayon</title>
+    <title>Statisztika - E-Crayon</title>
     <link rel="stylesheet" href="/css/bootstrap.css">
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,700|Poppins:400,600,700&display=swap" rel="stylesheet">
     <link href="/css/style.css" rel="stylesheet">
@@ -25,8 +25,8 @@
     <section class="event_section layout_padding">
         <div class="container">
             <div class="heading_container">
-                <h3>Grade Statistics</h3>
-                <p>Overview of your recorded grades.</p>
+                <h3>Statisztika</h3>
+                <p>A saját jegyeid összesítése és eloszlása.</p>
             </div>
             <% if (accountNotLinked) { %>
                 <div class="alert alert-warning mt-4">
@@ -36,19 +36,19 @@
                 <div class="row mt-4">
                     <div class="col-md-6">
                         <div class="stats-card">
-                            <div class="text-muted">Total grades</div>
+                            <div class="text-muted">Jegyek száma</div>
                             <div class="stats-number"><%= totalGrades %></div>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="stats-card">
-                            <div class="text-muted">Average grade</div>
+                            <div class="text-muted">Átlag</div>
                             <div class="stats-number"><%= totalGrades ? (gradeCounts.reduce((sum, count, index) => sum + count * (index + 1), 0) / totalGrades).toFixed(2) : "—" %></div>
                         </div>
                     </div>
                 </div>
                 <div class="stats-card">
-                    <h4 class="mb-4">Distribution by grade</h4>
+                    <h4 class="mb-4">Jegyek eloszlása</h4>
                     <canvas id="gradeChart" aria-label="Grade distribution chart" role="img"></canvas>
                 </div>
             <% } %>
@@ -62,9 +62,9 @@
             new Chart(gradeChartCanvas, {
                 type: "bar",
                 data: {
-                    labels: ["Grade 1", "Grade 2", "Grade 3", "Grade 4", "Grade 5"],
+                    labels: ["1-es", "2-es", "3-as", "4-es", "5-ös"],
                     datasets: [{
-                        label: "Number of grades",
+                        label: "Jegyek száma",
                         data: <%- JSON.stringify(gradeCounts) %>,
                         backgroundColor: ["#d9534f", "#f0ad4e", "#5bc0de", "#5cb85c", "#3978c5"],
                         borderRadius: 6

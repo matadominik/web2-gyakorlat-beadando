@@ -255,24 +255,17 @@ exports.gradebookIndex = async (req, res) => {
 
 exports.statsIndex = async (req, res) => {
     try {
-        let match = {};
+        const user = await User.findById(req.session.user.id);
 
-        if (req.session.user && req.session.user.role === "teacher") {
-            // A tanár statisztikája kizárólag az általa rögzített jegyekből készül.
-            match.teacher = new (require("mongoose").Types.ObjectId)(req.session.user.id);
-        } else if (req.session.user && req.session.user.role === "user") {
-            const user = await User.findById(req.session.user.id);
-
-            if (!user || !user.student) {
-                return res.render("stats", {
-                    gradeCounts: [0, 0, 0, 0, 0],
-                    totalGrades: 0,
-                    accountNotLinked: true
-                });
-            }
-
-            match.student = user.student;
+        if (!user || !user.student) {
+            return res.render("stats", {
+                gradeCounts: [0, 0, 0, 0, 0],
+                totalGrades: 0,
+                accountNotLinked: true
+            });
         }
+
+        const match = { student: user.student };
 
         const result = await Grade.aggregate([
             { $match: match },
@@ -898,8 +891,12 @@ exports.loginPost = async (req, res) => {
             return res.redirect("/manage-teachers");
         }
 
-        if (user.role === "teacher" || user.role === "admin") {
+        if (user.role === "teacher") {
             return res.redirect("/manage-grades");
+        }
+
+        if (user.role === "admin") {
+            return res.redirect("/timetable");
         }
 
         res.redirect("/gradebook");

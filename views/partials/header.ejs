@@ -32,9 +32,11 @@
                     </li>
                     <% } %>
 
+                    <% if (user && user.role === "user") { %>
                     <li class="nav-item <%= currentPath === '/stats' ? 'active' : '' %>">
-                        <a class="nav-link" href="/stats">Diagram</a>
+                        <a class="nav-link" href="/stats">Statisztika</a>
                     </li>
+                    <% } %>
 
                     <% if (user && user.role === "user") { %>
                     <li class="nav-item <%= currentPath === '/gradebook' ? 'active' : '' %>">
@@ -47,17 +49,19 @@
                     </li>
 
                     <% if (user) { %>
+                        <% if (["admin", "superadmin"].includes(user.role)) { %>
                         <li class="nav-item <%= currentPath === '/inbox' ? 'active' : '' %>">
-                            <a class="nav-link" href="/inbox">Messages</a>
+                            <a class="nav-link" href="/inbox">Contact Messages</a>
                         </li>
+                        <% } %>
                         <% if (["teacher", "user"].includes(user.role)) { %>
                             <li class="nav-item <%= currentPath === '/messages' ? 'active' : '' %>">
                                 <a class="nav-link" href="/messages">School Chat</a>
                             </li>
                         <% } %>
-                        <% if (["teacher", "admin", "superadmin"].includes(user.role)) { %>
+                        <% if (user.role === "teacher") { %>
                             <li class="nav-item <%= currentPath === '/manage-grades' ? 'active' : '' %>">
-                                <a class="nav-link" href="/manage-grades"><%= user.role === "teacher" ? "Manage Grades" : "CRUD" %></a>
+                                <a class="nav-link" href="/manage-grades">Manage Grades</a>
                             </li>
                         <% } %>
 

@@ -301,3 +301,26 @@ input, select, textarea, .form-control { max-width: 100%; }
     .messaging-shell { gap: 12px; }
     .thread { max-height: 55vh; }
 }
+
+/* Desktop: keep account and grade management content centered and use the available width. */
+@media (min-width: 769px) {
+    main.container,
+    .container.py-5 {
+        width: calc(100% - 64px);
+        max-width: 1200px;
+        margin-left: auto !important;
+        margin-right: auto !important;
+    }
+
+    main.container > .table-responsive,
+    .container.py-5 .table-responsive {
+        width: 100%;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    main.container .table,
+    .container.py-5 .table {
+        width: 100%;
+    }
+}

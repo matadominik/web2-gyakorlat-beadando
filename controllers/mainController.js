@@ -322,7 +322,20 @@ exports.manageGradesIndex = async (req, res) => {
                 .populate("student").sort({ username: 1 });
         }
 
-        const subjects = await Subject.find().populate("teacher").sort({ name: 1 });
+        let subjects;
+
+        if (req.session.user.role === "teacher") {
+            const teacherTimetableEntries = await TimetableEntry.find({
+                teacher: req.session.user.id
+            }).distinct("subject");
+
+            subjects = await Subject.find({
+                _id: { $in: teacherTimetableEntries }
+            }).sort({ name: 1 });
+        } else {
+            subjects = await Subject.find().populate("teacher").sort({ name: 1 });
+        }
+
         const classes = await SchoolClass.find().sort({ name: 1 });
 
         const className = String(req.query.className || "").trim();
@@ -908,10 +921,37 @@ exports.gradeCreate = async (req, res) => {
             return res.redirect("/manage-grades");
         }
 
+        if (req.session.user.role === "teacher") {
+            const selectedStudent = await Student.findById(student);
+
+            if (!selectedStudent) {
+                req.session.message = "Student not found.";
+                return res.redirect("/manage-grades");
+            }
+
+            const teacherAssignment = await TimetableEntry.findOne({
+                teacher: req.session.user.id,
+                subject,
+                className: selectedStudent.className
+            });
+
+            if (!teacherAssignment) {
+                req.session.message = "You are not assigned to teach this subject in this class.";
+                return res.redirect("/manage-grades");
+            }
+        }
+
+        const gradeValue = Number(value);
+
+        if (!Number.isInteger(gradeValue) || gradeValue < 1 || gradeValue > 5) {
+            req.session.message = "Grade must be between 1 and 5.";
+            return res.redirect("/manage-grades");
+        }
+
         await Grade.create({
             student,
             subject,
-            value: Number(value),
+            value: gradeValue,
             type,
             date: date || Date.now(),
             ...(req.session.user.role === "teacher" ? { teacher: req.session.user.id } : {}),
@@ -934,13 +974,39 @@ exports.gradeUpdate = async (req, res) => {
         const gradeFilter = { _id: id };
         if (req.session.user.role === "teacher") {
             gradeFilter.teacher = req.session.user.id;
+
+            const selectedStudent = await Student.findById(student);
+
+            if (!selectedStudent) {
+                req.session.message = "Student not found.";
+                return res.redirect("/manage-grades");
+            }
+
+            const teacherAssignment = await TimetableEntry.findOne({
+                teacher: req.session.user.id,
+                subject,
+                className: selectedStudent.className
+            });
+
+            if (!teacherAssignment) {
+                req.session.message = "You are not assigned to teach this subject in this class.";
+                return res.redirect("/manage-grades");
+            }
         }
+
+        const gradeValue = Number(value);
+
+        if (!Number.isInteger(gradeValue) || gradeValue < 1 || gradeValue > 5) {
+            req.session.message = "Grade must be between 1 and 5.";
+            return res.redirect("/manage-grades");
+        }
+
         const updatedGrade = await Grade.findOneAndUpdate(
             gradeFilter,
             {
                 student,
                 subject,
-                value: Number(value),
+                value: gradeValue,
                 type,
                 date: date || Date.now(),
                 note

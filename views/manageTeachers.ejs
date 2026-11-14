@@ -235,8 +235,8 @@
 
         <section class="mt-5 mb-5">
             <h3 class="mb-3">Weekly Timetable</h3>
-            <p>Lessons repeat weekly between September 1 and May 31. The teacher is taken automatically from the subject assignment.</p>
-            <form method="POST" action="/manage-teachers/timetable/create" class="row align-items-end">
+            <p>Lessons repeat weekly between September 1 and May 31. Select a subject first, then choose the teacher who teaches it.</p>
+            <form method="POST" action="/manage-teachers/timetable/create" class="row align-items-end" id="timetableForm">
                 <div class="col-md-3 mb-2">
                     <label>Class</label>
                     <select name="className" class="form-control" required>
@@ -247,11 +247,25 @@
                     </select>
                 </div>
                 <div class="col-md-3 mb-2">
-                    <label>Subject</label>
-                    <select name="subjectId" class="form-control" required>
+                    <label for="timetableSubjectName">Subject</label>
+                    <select id="timetableSubjectName" class="form-control" required>
                         <option value="">Select subject</option>
-                        <% subjects.forEach(item => { %>
-                            <option value="<%= item._id %>"><%= item.name %></option>
+                        <% [...new Set((subjects || []).map(item => item.name).filter(Boolean))].sort((a, b) => a.localeCompare(b)).forEach(subjectName => { %>
+                            <option value="<%= subjectName %>"><%= subjectName %></option>
+                        <% }) %>
+                    </select>
+                    <input type="hidden" name="subjectId" id="timetableSubjectId">
+                </div>
+                <div class="col-md-3 mb-2">
+                    <label for="timetableTeacher">Teacher</label>
+                    <select id="timetableTeacher" name="teacherId" class="form-control" required disabled>
+                        <option value="">First select a subject</option>
+                        <% (subjects || []).forEach(item => { %>
+                            <% if (item.teacher && ["teacher", "admin"].includes(item.teacher.role) && item.teacher.status !== "disabled") { %>
+                                <option value="<%= item.teacher._id %>" data-subject-name="<%= item.name %>" data-subject-id="<%= item._id %>">
+                                    <%= item.teacher.student && item.teacher.student.name ? item.teacher.student.name : (item.teacher.displayName || item.teacher.username) %>
+                                </option>
+                            <% } %>
                         <% }) %>
                     </select>
                 </div>
@@ -328,5 +342,41 @@
     </main>
 
     <%- include("partials/footer") %>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const subjectSelect = document.getElementById("timetableSubjectName");
+            const teacherSelect = document.getElementById("timetableTeacher");
+            const subjectIdInput = document.getElementById("timetableSubjectId");
+
+            if (!subjectSelect || !teacherSelect || !subjectIdInput) return;
+
+            const teacherOptions = Array.from(teacherSelect.querySelectorAll("option[data-subject-name]"));
+
+            function updateTeachers() {
+                const selectedSubject = subjectSelect.value;
+                teacherSelect.innerHTML = "";
+
+                const placeholder = document.createElement("option");
+                placeholder.value = "";
+                placeholder.textContent = selectedSubject ? "Select teacher" : "First select a subject";
+                teacherSelect.appendChild(placeholder);
+
+                const matchingOptions = teacherOptions.filter(option => option.dataset.subjectName === selectedSubject);
+                matchingOptions.forEach(option => teacherSelect.appendChild(option.cloneNode(true)));
+
+                teacherSelect.disabled = !selectedSubject || matchingOptions.length === 0;
+                subjectIdInput.value = "";
+                if (matchingOptions.length === 0 && selectedSubject) {
+                    placeholder.textContent = "No teacher assigned to this subject";
+                }
+            }
+
+            subjectSelect.addEventListener("change", updateTeachers);
+            teacherSelect.addEventListener("change", function () {
+                const selectedOption = teacherSelect.options[teacherSelect.selectedIndex];
+                subjectIdInput.value = selectedOption && selectedOption.dataset.subjectId ? selectedOption.dataset.subjectId : "";
+            });
+        });
+    </script>
 </body>
 </html>

@@ -616,6 +616,7 @@ exports.createTimetableEntry = async (req, res) => {
     try {
         const className = String(req.body.className || "").trim();
         const subjectId = String(req.body.subjectId || "").trim();
+        const teacherId = String(req.body.teacherId || "").trim();
         const dayOfWeek = Number(req.body.dayOfWeek);
         const startTime = String(req.body.startTime || "");
         const endTime = String(req.body.endTime || "");
@@ -623,7 +624,7 @@ exports.createTimetableEntry = async (req, res) => {
         const activeTo = new Date(`${req.body.activeTo}T23:59:59.999Z`);
         const validClass = await SchoolClass.findOne({ name: className });
         const subject = await Subject.findById(subjectId).populate("teacher");
-        const teacher = subject && subject.teacher && ["teacher", "admin"].includes(subject.teacher.role) && subject.teacher.status !== "disabled" ? subject.teacher : null;
+        const teacher = subject && subject.teacher && String(subject.teacher._id) === teacherId && ["teacher", "admin"].includes(subject.teacher.role) && subject.teacher.status !== "disabled" ? subject.teacher : null;
         const timePattern = /^([01]\d|2[0-3]):[0-5]\d$/;
         if (!validClass || !subject || !teacher || !Number.isInteger(dayOfWeek) || dayOfWeek < 1 || dayOfWeek > 5 || !timePattern.test(startTime) || !timePattern.test(endTime) || startTime >= endTime || Number.isNaN(activeFrom.getTime()) || Number.isNaN(activeTo.getTime()) || activeFrom > activeTo) {
             req.session.message = "Please check the class, subject, teacher, day, times and school-year dates.";

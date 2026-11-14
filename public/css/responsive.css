@@ -263,3 +263,41 @@
         max-width: 1170px;
     }
 }
+/* E-Crayon shared responsive improvements */
+html, body { max-width: 100%; overflow-x: hidden; }
+img, video, iframe { max-width: 100%; height: auto; }
+.container, .container-fluid { width: 100%; }
+
+/* Keep data tables usable on phones without breaking the page width. */
+.table-responsive, .table { max-width: 100%; }
+.table { display: block; width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.table th, .table td { white-space: nowrap; vertical-align: middle; }
+
+/* Forms and controls should fit narrow screens. */
+input, select, textarea, .form-control { max-width: 100%; }
+.btn { white-space: normal; }
+
+@media (max-width: 768px) {
+    main.container, .container.py-5, .event_section .container { padding-left: 15px; padding-right: 15px; }
+    .navbar-brand h3 { font-size: 1.35rem; }
+    .navbar-brand span { font-size: .8rem; }
+    .custom_nav-container .navbar-toggler { margin-right: 0; }
+    .navbar-nav { align-items: stretch; text-align: center; }
+    .custom_nav-container .navbar-nav .nav-item .nav-link { padding: 10px 12px; margin: 1px 0; }
+    h1 { font-size: 1.8rem; }
+    h3 { font-size: 1.35rem; }
+    .card, .stats-card, .message-panel { padding: 14px; }
+    .week-nav { align-items: stretch; }
+    .week-nav > * { max-width: 100%; }
+    .grade-row { grid-template-columns: 48px minmax(0, 1fr) 35px; gap: 8px; }
+}
+
+@media (max-width: 480px) {
+    .container, .container-fluid { padding-left: 12px; padding-right: 12px; }
+    .py-5 { padding-top: 1.5rem !important; padding-bottom: 1.5rem !important; }
+    .btn, button { max-width: 100%; }
+    .form-group, .form-row, .row { min-width: 0; }
+    .table th, .table td { padding: .45rem; font-size: .85rem; }
+    .messaging-shell { gap: 12px; }
+    .thread { max-height: 55vh; }
+}

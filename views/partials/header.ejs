@@ -22,6 +22,9 @@
                     <li class="nav-item <%= currentPath === '/' ? 'active' : '' %>">
                         <a class="nav-link" href="/">Home</a>
                     </li>
+                    <li class="nav-item <%= currentPath === '/database' ? 'active' : '' %>">
+                        <a class="nav-link" href="/database">Database</a>
+                    </li>
 
                     <% if (user && ["user", "teacher", "admin"].includes(user.role)) { %>
                     <li class="nav-item <%= currentPath === '/timetable' ? 'active' : '' %>">
@@ -29,29 +32,32 @@
                     </li>
                     <% } %>
 
+                    <li class="nav-item <%= currentPath === '/stats' ? 'active' : '' %>">
+                        <a class="nav-link" href="/stats">Diagram</a>
+                    </li>
+
                     <% if (user && user.role === "user") { %>
                     <li class="nav-item <%= currentPath === '/gradebook' ? 'active' : '' %>">
                         <a class="nav-link" href="/gradebook">Gradebook</a>
                     </li>
-
-                    <li class="nav-item <%= currentPath === '/stats' ? 'active' : '' %>">
-                        <a class="nav-link" href="/stats">Statistics</a>
-                    </li>
                     <% } %>
 
-                    <li class="nav-item <%= currentPath === '/contact' || currentPath === '/contact/inbox' ? 'active' : '' %>">
-                        <a class="nav-link" href="<%= user && user.role === 'superadmin' ? '/contact/inbox' : '/contact' %>"><%= user && user.role === 'superadmin' ? 'Contact Inbox' : 'Contact' %></a>
+                    <li class="nav-item <%= currentPath === '/contact' ? 'active' : '' %>">
+                        <a class="nav-link" href="/contact">Contact</a>
                     </li>
 
                     <% if (user) { %>
+                        <li class="nav-item <%= currentPath === '/inbox' ? 'active' : '' %>">
+                            <a class="nav-link" href="/inbox">Messages</a>
+                        </li>
                         <% if (["teacher", "user"].includes(user.role)) { %>
                             <li class="nav-item <%= currentPath === '/messages' ? 'active' : '' %>">
-                                <a class="nav-link" href="/messages">Messages</a>
+                                <a class="nav-link" href="/messages">School Chat</a>
                             </li>
                         <% } %>
-                        <% if (["teacher", "admin"].includes(user.role)) { %>
+                        <% if (["admin", "superadmin"].includes(user.role)) { %>
                             <li class="nav-item <%= currentPath === '/manage-grades' ? 'active' : '' %>">
-                                <a class="nav-link" href="/manage-grades">Manage Grades</a>
+                                <a class="nav-link" href="/manage-grades">CRUD</a>
                             </li>
                         <% } %>
 

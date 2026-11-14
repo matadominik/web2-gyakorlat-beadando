@@ -59,9 +59,26 @@ exports.homeIndex = (req, res) => {
     res.render("home");
 };
 
+exports.databaseIndex = async (req, res) => {
+    try {
+        const [students, subjects, grades, studentCount, subjectCount, gradeCount] = await Promise.all([
+            Student.find().sort({ name: 1 }).limit(100),
+            Subject.find().populate("teacher", "displayName username").sort({ name: 1 }).limit(100),
+            Grade.find().populate("student", "name className").populate("subject", "name").populate("teacher", "displayName username").sort({ date: -1 }).limit(100),
+            Student.countDocuments(),
+            Subject.countDocuments(),
+            Grade.countDocuments()
+        ]);
+        res.render("database", { students, subjects, grades, studentCount, subjectCount, gradeCount });
+    } catch (err) {
+        console.error("Database page error:", err);
+        res.status(500).send("Could not load database records.");
+    }
+};
+
 exports.feedbackIndex = async (req, res) => {
     try {
-        const messages = await SentMessage.find().sort({ _id: -1 });
+        const messages = await SentMessage.find().sort({ createdAt: -1, _id: -1 });
         res.render("feedback", { messages });
     } catch (err) {
         console.error("Messages error:", err);
@@ -243,7 +260,7 @@ exports.statsIndex = async (req, res) => {
         if (req.session.user && req.session.user.role === "teacher") {
             // A tanár statisztikája kizárólag az általa rögzített jegyekből készül.
             match.teacher = new (require("mongoose").Types.ObjectId)(req.session.user.id);
-        } else if (req.session.user && req.session.user.role !== "admin") {
+        } else if (req.session.user && req.session.user.role === "user") {
             const user = await User.findById(req.session.user.id);
 
             if (!user || !user.student) {

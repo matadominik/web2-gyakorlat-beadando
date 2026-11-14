@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <title>Database - E-Crayon</title>
+    <link rel="stylesheet" href="/css/bootstrap.css">
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,700|Poppins:400,600,700&display=swap" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+    <link href="/css/responsive.css" rel="stylesheet">
+</head>
+<body class="sub_page">
+    <div class="hero_area"><%- include("partials/header") %></div>
+    <section class="event_section layout_padding">
+        <div class="container">
+            <div class="heading_container">
+                <h3>Database</h3>
+                <p>Public overview of the E-Crayon academic database.</p>
+            </div>
+            <div class="row mt-4 mb-5">
+                <div class="col-md-4 mb-3"><div class="border rounded p-4 bg-white"><h5>Students</h5><h2><%= studentCount %></h2></div></div>
+                <div class="col-md-4 mb-3"><div class="border rounded p-4 bg-white"><h5>Subjects</h5><h2><%= subjectCount %></h2></div></div>
+                <div class="col-md-4 mb-3"><div class="border rounded p-4 bg-white"><h5>Grades</h5><h2><%= gradeCount %></h2></div></div>
+            </div>
+            <h4 class="mb-3">Students</h4>
+            <div class="table-responsive mb-5"><table class="table table-bordered table-striped"><thead><tr><th>Name</th><th>Class</th></tr></thead><tbody>
+                <% if (!students.length) { %><tr><td colspan="2">No student records.</td></tr><% } %>
+                <% students.forEach(student => { %><tr><td><%= student.name %></td><td><%= student.className %></td></tr><% }) %>
+            </tbody></table></div>
+            <h4 class="mb-3">Subjects</h4>
+            <div class="table-responsive mb-5"><table class="table table-bordered table-striped"><thead><tr><th>Subject</th><th>Teacher</th></tr></thead><tbody>
+                <% if (!subjects.length) { %><tr><td colspan="2">No subject records.</td></tr><% } %>
+                <% subjects.forEach(subject => { %><tr><td><%= subject.name %></td><td><%= subject.teacherName || (subject.teacher && (subject.teacher.displayName || subject.teacher.username)) || "-" %></td></tr><% }) %>
+            </tbody></table></div>
+            <h4 class="mb-3">Latest grades</h4>
+            <div class="table-responsive"><table class="table table-bordered table-striped"><thead><tr><th>Student</th><th>Class</th><th>Subject</th><th>Grade</th><th>Type</th><th>Date</th></tr></thead><tbody>
+                <% if (!grades.length) { %><tr><td colspan="6">No grade records.</td></tr><% } %>
+                <% grades.forEach(grade => { %><tr><td><%= grade.student ? grade.student.name : "Deleted student" %></td><td><%= grade.student ? grade.student.className : "-" %></td><td><%= grade.subject ? grade.subject.name : "Deleted subject" %></td><td><%= grade.value %></td><td><%= grade.type %></td><td><%= grade.date ? new Date(grade.date).toLocaleDateString("en-GB") : "-" %></td></tr><% }) %>
+            </tbody></table></div>
+            <p class="text-muted mt-3">The page displays up to 100 records per table.</p>
+        </div>
+    </section>
+    <%- include("partials/footer") %>
+</body>
+</html>

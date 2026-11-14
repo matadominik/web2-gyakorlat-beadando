@@ -596,17 +596,18 @@ exports.createSubject = async (req, res) => {
     try {
         const name = String(req.body.name || "").trim();
         const teacherId = String(req.body.teacherId || "").trim();
+        const existingSubject = await Subject.findOne({ name });
         const teacher = await User.findOne({ _id: teacherId, role: { $in: ["teacher", "admin"] }, status: { $ne: "disabled" } });
-        if (name.length < 2 || name.length > 80 || !teacher) {
-            req.session.message = "Enter a valid subject name and select an active teacher.";
+        if (!existingSubject || !teacher) {
+            req.session.message = "Select an existing subject and an active teacher.";
             return res.redirect("/manage-teachers");
         }
-        await Subject.create({ name, teacher: teacher._id, teacherName: teacher.displayName || teacher.username });
-        req.session.message = "Subject created and assigned to the selected teacher.";
+        await Subject.create({ name: existingSubject.name, teacher: teacher._id, teacherName: teacher.displayName || teacher.username });
+        req.session.message = "Existing subject assigned to the selected teacher.";
         res.redirect("/manage-teachers");
     } catch (err) {
         console.error("Create subject error:", err);
-        req.session.message = err.code === 11000 ? "This subject already exists." : "Could not create the subject.";
+        req.session.message = "Could not assign the subject to this teacher.";
         res.redirect("/manage-teachers");
     }
 };

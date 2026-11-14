@@ -162,6 +162,12 @@
                                         </form>
                                     </td>
                                     <td>
+                                        <% if (account.status === "approved") { %>
+                                            <form method="POST" action="/manage-teachers/promote" class="mb-2" onsubmit="return confirm('Promote this account to teacher?');">
+                                                <input type="hidden" name="userId" value="<%= account._id %>">
+                                                <button type="submit" class="btn btn-sm btn-success">Make Teacher</button>
+                                            </form>
+                                        <% } %>
                                         <form method="POST" action="/manage-teachers/delete-student" onsubmit="return confirm('Permanently delete this student profile, login account and all associated grades? This cannot be undone.');">
                                             <input type="hidden" name="userId" value="<%= account._id %>">
                                             <button type="submit" class="btn btn-sm btn-danger">Delete Profile</button>
@@ -181,8 +187,13 @@
             <h3 class="mb-3">Subjects and Teacher Assignment</h3>
             <form method="POST" action="/manage-teachers/subjects/create" class="row align-items-end mb-4">
                 <div class="col-md-5 mb-2">
-                    <label for="subjectName">Subject name</label>
-                    <input id="subjectName" name="name" class="form-control" maxlength="80" required>
+                    <label for="subjectName">Subject</label>
+                    <select id="subjectName" name="name" class="form-control" required>
+                        <option value="">Select an existing subject</option>
+                        <% [...new Set((subjects || []).map(item => item.name).filter(Boolean))].sort((a, b) => a.localeCompare(b)).forEach(subjectName => { %>
+                            <option value="<%= subjectName %>"><%= subjectName %></option>
+                        <% }) %>
+                    </select>
                 </div>
                 <div class="col-md-5 mb-2">
                     <label for="subjectTeacher">Assigned teacher</label>
@@ -197,6 +208,9 @@
                     <button type="submit" class="btn btn-primary btn-block">Add Subject</button>
                 </div>
             </form>
+            <% if (!subjects || !subjects.length) { %>
+                <p class="text-muted">There are no subjects in the system yet. Add the initial subject records before assigning teachers.</p>
+            <% } %>
             <div class="table-responsive">
                 <table class="table table-bordered table-striped">
                     <thead>

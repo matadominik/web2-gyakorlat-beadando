@@ -7,6 +7,7 @@ const Student = require("../models/Student");
 const Subject = require("../models/Subject");
 const Grade = require("../models/Grade");
 const SchoolClass = require("../models/SchoolClass");
+const TimetableEntry = require("../models/TimetableEntry");
 
 exports.homeIndex = (req, res) => {
     res.render("home");
@@ -136,7 +137,7 @@ exports.statsIndex = async (req, res) => {
 exports.manageGradesIndex = async (req, res) => {
     try {
         const students = await Student.find().sort({ name: 1 });
-        const subjects = await Subject.find().sort({ name: 1 });
+        const subjects = await Subject.find().populate("teacher").sort({ name: 1 });
         const classes = await SchoolClass.find().sort({ name: 1 });
 
         const className = String(req.query.className || "").trim();
@@ -271,7 +272,11 @@ exports.manageTeachersIndex = async (req, res) => {
         const teachers = await User.find({ role: { $in: ["teacher", "admin"] } }).sort({ username: 1 });
         const studentAccounts = await User.find({ role: "user" }).populate("student").sort({ username: 1 });
         const pendingUsers = await User.find({ role: "user", status: "pending" }).populate("student").sort({ username: 1 });
-        res.render("manageTeachers", { teachers, studentAccounts, pendingUsers });
+        const classes = await SchoolClass.find().sort({ name: 1 });
+        const subjects = await Subject.find().populate("teacher").sort({ name: 1 });
+        const timetableEntries = await TimetableEntry.find().populate("subject").populate("teacher").sort({ className: 1, dayOfWeek: 1, startTime: 1 });
+        const academicYearStart = new Date().getMonth() >= 8 ? new Date().getFullYear() : new Date().getFullYear() - 1;
+        res.render("manageTeachers", { teachers, studentAccounts, pendingUsers, classes, subjects, timetableEntries, defaultActiveFrom: `${academicYearStart}-09-01`, defaultActiveTo: `${academicYearStart + 1}-05-31` });
     } catch (err) {
         console.error("Manage teachers error:", err);
         res.status(500).send("An error occurred while loading account management.");
@@ -334,7 +339,10 @@ exports.deleteTeacher = async (req, res) => {
             await Grade.deleteMany({ student: teacher.student });
             await Student.findByIdAndDelete(teacher.student);
         }
-        if (teacher) await User.findByIdAndDelete(teacher._id);
+        if (teacher) {
+            await TimetableEntry.deleteMany({ teacher: teacher._id });
+            await User.findByIdAndDelete(teacher._id);
+        }
         req.session.message = teacher ? "Teacher account deleted." : "Teacher account not found.";
         res.redirect("/manage-teachers");
     } catch (err) {
@@ -369,6 +377,110 @@ exports.deleteStudentProfile = async (req, res) => {
         console.error("Delete student profile error:", err);
         req.session.message = "Could not delete the student profile.";
         res.redirect("/manage-teachers");
+    }
+};
+
+exports.moveStudentClass = async (req, res) => {
+    try {
+        const account = await User.findOne({ _id: req.body.userId, role: "user" }).populate("student");
+        const className = String(req.body.className || "").trim();
+        const targetClass = await SchoolClass.findOne({ name: className });
+        if (!account || !account.student || !targetClass) {
+            req.session.message = "Student or target class was not found.";
+            return res.redirect("/manage-teachers");
+        }
+        account.student.className = targetClass.name;
+        await account.student.save();
+        req.session.message = `${account.student.name} moved to ${targetClass.name}.`;
+        res.redirect("/manage-teachers");
+    } catch (err) {
+        console.error("Move student class error:", err);
+        req.session.message = "Could not move the student to the selected class.";
+        res.redirect("/manage-teachers");
+    }
+};
+
+exports.createSubject = async (req, res) => {
+    try {
+        const name = String(req.body.name || "").trim();
+        const teacherId = String(req.body.teacherId || "").trim();
+        const teacher = await User.findOne({ _id: teacherId, role: { $in: ["teacher", "admin"] }, status: { $ne: "disabled" } });
+        if (name.length < 2 || name.length > 80 || !teacher) {
+            req.session.message = "Enter a valid subject name and select an active teacher.";
+            return res.redirect("/manage-teachers");
+        }
+        await Subject.create({ name, teacher: teacher._id, teacherName: teacher.displayName || teacher.username });
+        req.session.message = "Subject created and assigned to the selected teacher.";
+        res.redirect("/manage-teachers");
+    } catch (err) {
+        console.error("Create subject error:", err);
+        req.session.message = err.code === 11000 ? "This subject already exists." : "Could not create the subject.";
+        res.redirect("/manage-teachers");
+    }
+};
+
+exports.createTimetableEntry = async (req, res) => {
+    try {
+        const className = String(req.body.className || "").trim();
+        const subjectId = String(req.body.subjectId || "").trim();
+        const dayOfWeek = Number(req.body.dayOfWeek);
+        const startTime = String(req.body.startTime || "");
+        const endTime = String(req.body.endTime || "");
+        const activeFrom = new Date(`${req.body.activeFrom}T00:00:00.000Z`);
+        const activeTo = new Date(`${req.body.activeTo}T23:59:59.999Z`);
+        const validClass = await SchoolClass.findOne({ name: className });
+        const subject = await Subject.findById(subjectId).populate("teacher");
+        const teacher = subject && subject.teacher && ["teacher", "admin"].includes(subject.teacher.role) && subject.teacher.status !== "disabled" ? subject.teacher : null;
+        const timePattern = /^([01]\d|2[0-3]):[0-5]\d$/;
+        if (!validClass || !subject || !teacher || !Number.isInteger(dayOfWeek) || dayOfWeek < 1 || dayOfWeek > 5 || !timePattern.test(startTime) || !timePattern.test(endTime) || startTime >= endTime || Number.isNaN(activeFrom.getTime()) || Number.isNaN(activeTo.getTime()) || activeFrom > activeTo) {
+            req.session.message = "Please check the class, subject, teacher, day, times and school-year dates.";
+            return res.redirect("/manage-teachers");
+        }
+        const overlap = (aStart, aEnd, bStart, bEnd) => aStart < bEnd && aEnd > bStart;
+        const existing = await TimetableEntry.find({ className, dayOfWeek, activeFrom: { $lte: activeTo }, activeTo: { $gte: activeFrom } });
+        if (existing.some(item => overlap(startTime, endTime, item.startTime, item.endTime))) {
+            req.session.message = "This class already has a lesson scheduled in that time slot.";
+            return res.redirect("/manage-teachers");
+        }
+        const teacherEntries = await TimetableEntry.find({ teacher: teacher._id, dayOfWeek, activeFrom: { $lte: activeTo }, activeTo: { $gte: activeFrom } });
+        if (teacherEntries.some(item => overlap(startTime, endTime, item.startTime, item.endTime))) {
+            req.session.message = "This teacher already has a lesson scheduled in that time slot.";
+            return res.redirect("/manage-teachers");
+        }
+        await TimetableEntry.create({ className, subject: subject._id, teacher: teacher._id, dayOfWeek, startTime, endTime, activeFrom, activeTo });
+        req.session.message = "Weekly timetable lesson added successfully.";
+        res.redirect("/manage-teachers");
+    } catch (err) {
+        console.error("Create timetable entry error:", err);
+        req.session.message = "Could not add the timetable lesson.";
+        res.redirect("/manage-teachers");
+    }
+};
+
+exports.deleteTimetableEntry = async (req, res) => {
+    try {
+        await TimetableEntry.findByIdAndDelete(req.body.entryId);
+        req.session.message = "Timetable lesson deleted.";
+    } catch (err) {
+        console.error("Delete timetable entry error:", err);
+        req.session.message = "Could not delete the timetable lesson.";
+    }
+    res.redirect("/manage-teachers");
+};
+
+exports.timetableIndex = async (req, res) => {
+    try {
+        const user = await User.findById(req.session.user.id).populate("student");
+        if (!user || !user.student) return res.status(404).send("Student profile not found.");
+        const now = new Date();
+        const year = now.getUTCMonth() >= 8 ? now.getUTCFullYear() : now.getUTCFullYear() - 1;
+        const periodStart = new Date(Date.UTC(year, 8, 1));
+        const periodEnd = new Date(Date.UTC(year + 1, 4, 31, 23, 59, 59, 999));
+        const timetableEntries = await TimetableEntry.find({ className: user.student.className, activeFrom: { $lte: now }, activeTo: { $gte: now } }).populate("subject").populate("teacher").sort({ dayOfWeek: 1, startTime: 1 });
+        res.render("timetable", { timetableEntries, className: user.student.className, periodStart, periodEnd });
+    } catch (err) {
+        console.error("Timetable error:", err);
+        res.status(500).send("Could not load the timetable.");
     }
 };
 

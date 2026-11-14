@@ -46,6 +46,7 @@ router.post("/contact", controller.contactPost);
 
 router.get("/gradebook", isLoggedIn, requireRole("user"), controller.gradebookIndex);
 router.get("/stats", isLoggedIn, requireRole("user"), controller.statsIndex);
+router.get("/timetable", isLoggedIn, requireRole("user"), controller.timetableIndex);
 router.get("/feedback", isLoggedIn, requireTeacher, controller.feedbackIndex);
 router.get("/logout", isLoggedIn, controller.logout);
 
@@ -61,5 +62,9 @@ router.post("/manage-teachers/promote", isLoggedIn, requireRole("superadmin"), c
 router.post("/manage-teachers/change-password", isLoggedIn, requireRole("superadmin"), controller.changeAccountPassword);
 router.post("/manage-teachers/delete", isLoggedIn, requireRole("superadmin"), controller.deleteTeacher);
 router.post("/manage-teachers/delete-student", isLoggedIn, requireRole("superadmin"), controller.deleteStudentProfile);
+router.post("/manage-teachers/move-student", isLoggedIn, requireRole("superadmin"), controller.moveStudentClass);
+router.post("/manage-teachers/subjects/create", isLoggedIn, requireRole("superadmin"), controller.createSubject);
+router.post("/manage-teachers/timetable/create", isLoggedIn, requireRole("superadmin"), controller.createTimetableEntry);
+router.post("/manage-teachers/timetable/delete", isLoggedIn, requireRole("superadmin"), controller.deleteTimetableEntry);
 
 module.exports = router;

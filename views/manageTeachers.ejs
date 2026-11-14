@@ -107,16 +107,29 @@
             <div class="table-responsive">
                 <table class="table table-bordered table-striped">
                     <thead>
-                        <tr><th>Full Name</th><th>Class</th><th>Username</th><th>Status</th><th>Change Password</th><th>Actions</th></tr>
+                        <tr><th>Full Name</th><th>Class</th><th>Move Class</th><th>Username</th><th>Status</th><th>Change Password</th><th>Actions</th></tr>
                     </thead>
                     <tbody>
                         <% if (!studentAccounts || studentAccounts.length === 0) { %>
-                            <tr><td colspan="6">No student accounts found.</td></tr>
+                            <tr><td colspan="7">No student accounts found.</td></tr>
                         <% } else { %>
                             <% studentAccounts.forEach(account => { %>
                                 <tr>
                                     <td><%= account.student ? account.student.name : (account.displayName || "Student record missing") %></td>
                                     <td><%= account.student ? account.student.className : "-" %></td>
+                                    <td>
+                                        <% if (account.student && classes && classes.length) { %>
+                                            <form method="POST" action="/manage-teachers/move-student" class="d-flex">
+                                                <input type="hidden" name="userId" value="<%= account._id %>">
+                                                <select name="className" class="form-control form-control-sm mr-2" required>
+                                                    <% classes.forEach(schoolClass => { %>
+                                                        <option value="<%= schoolClass.name %>" <%= account.student.className === schoolClass.name ? "selected" : "" %>><%= schoolClass.name %></option>
+                                                    <% }) %>
+                                                </select>
+                                                <button type="submit" class="btn btn-sm btn-primary">Move</button>
+                                            </form>
+                                        <% } else { %>-<% } %>
+                                    </td>
                                     <td><%= account.username %></td>
                                     <td><%= account.status || "approved" %></td>
                                     <td>
@@ -145,6 +158,70 @@
                 </table>
             </div>
         </section>
+
+        <hr>
+
+        <section class="mt-5 mb-5">
+            <h3 class="mb-3">Subjects and Teacher Assignment</h3>
+            <form method="POST" action="/manage-teachers/subjects/create" class="row align-items-end mb-4">
+                <div class="col-md-5 mb-2">
+                    <label for="subjectName">Subject name</label>
+                    <input id="subjectName" name="name" class="form-control" maxlength="80" required>
+                </div>
+                <div class="col-md-5 mb-2">
+                    <label for="subjectTeacher">Assigned teacher</label>
+                    <select id="subjectTeacher" name="teacherId" class="form-control" required>
+                        <option value="">Select teacher</option>
+                        <% teachers.filter(item => item.status !== "disabled").forEach(teacher => { %>
+                            <option value="<%= teacher._id %>"><%= teacher.displayName || teacher.username %></option>
+                        <% }) %>
+                    </select>
+                </div>
+                <div class="col-md-2 mb-2"><button type="submit" class="btn btn-primary btn-block">Add Subject</button></div>
+            </form>
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped">
+                    <thead><tr><th>Subject</th><th>Teacher</th></tr></thead>
+                    <tbody>
+                        <% if (!subjects || !subjects.length) { %><tr><td colspan="2">No subjects have been added yet.</td></tr><% } %>
+                        <% (subjects || []).forEach(subject => { %>
+                            <tr><td><%= subject.name %></td><td><%= subject.teacher ? (subject.teacher.displayName || subject.teacher.username) : (subject.teacherName || "Not assigned") %></td></tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <hr>
+
+        <section class="mt-5 mb-5">
+            <h3 class="mb-3">Weekly Timetable</h3>
+            <p>Lessons repeat weekly between September 1 and May 31. The teacher is taken automatically from the subject assignment.</p>
+            <form method="POST" action="/manage-teachers/timetable/create" class="row align-items-end">
+                <div class="col-md-3 mb-2"><label>Class</label><select name="className" class="form-control" required><option value="">Select class</option><% classes.forEach(item => { %><option value="<%= item.name %>"><%= item.name %></option><% }) %></select></div>
+                <div class="col-md-3 mb-2"><label>Subject</label><select name="subjectId" class="form-control" required><option value="">Select subject</option><% subjects.forEach(item => { %><option value="<%= item._id %>"><%= item.name %></option><% }) %></select></div>
+                <div class="col-md-3 mb-2"><label>Day</label><select name="dayOfWeek" class="form-control" required><option value="1">Monday</option><option value="2">Tuesday</option><option value="3">Wednesday</option><option value="4">Thursday</option><option value="5">Friday</option></select></div>
+                <div class="col-md-2 mb-2"><label>From</label><input type="time" name="startTime" class="form-control" required></div>
+                <div class="col-md-2 mb-2"><label>To</label><input type="time" name="endTime" class="form-control" required></div>
+                <div class="col-md-3 mb-2"><label>Active from</label><input type="date" name="activeFrom" class="form-control" value="<%= defaultActiveFrom %>" required></div>
+                <div class="col-md-3 mb-2"><label>Active until</label><input type="date" name="activeTo" class="form-control" value="<%= defaultActiveTo %>" required></div>
+                <div class="col-md-2 mb-2"><button type="submit" class="btn btn-primary btn-block">Add Lesson</button></div>
+            </form>
+            <div class="table-responsive mt-4">
+                <table class="table table-bordered table-striped">
+                    <thead><tr><th>Class</th><th>Day</th><th>Time</th><th>Subject</th><th>Teacher</th><th>Period</th><th>Action</th></tr></thead>
+                    <tbody>
+                        <% if (!timetableEntries || !timetableEntries.length) { %><tr><td colspan="7">No timetable lessons added yet.</td></tr><% } %>
+                        <% const dayNames = ["", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]; %>
+                        <% (timetableEntries || []).forEach(entry => { %>
+                            <tr><td><%= entry.className %></td><td><%= dayNames[entry.dayOfWeek] || "-" %></td><td><%= entry.startTime %>–<%= entry.endTime %></td><td><%= entry.subject ? entry.subject.name : "Deleted subject" %></td><td><%= entry.teacher ? (entry.teacher.displayName || entry.teacher.username) : "Deleted teacher" %></td><td><%= new Date(entry.activeFrom).toLocaleDateString("en-GB") %> – <%= new Date(entry.activeTo).toLocaleDateString("en-GB") %></td><td><form method="POST" action="/manage-teachers/timetable/delete" onsubmit="return confirm('Delete this timetable lesson?');"><input type="hidden" name="entryId" value="<%= entry._id %>"><button class="btn btn-sm btn-danger" type="submit">Delete</button></form></td></tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <hr>
     </main>
 
     <%- include("partials/footer") %>

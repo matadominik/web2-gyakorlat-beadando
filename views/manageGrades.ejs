@@ -125,7 +125,7 @@
 
             <div class="form-group mb-3">
                 <label>Student</label>
-                <select name="student" id="gradeStudent" class="form-control" required <%= user && user.role === "teacher" && !editGrade ? "disabled" : "" %>>
+                <select name="student" id="gradeStudent" class="form-control" required <%= user && user.role === "teacher" ? "disabled" : "" %>>
                     <option value="">Select a subject first</option>
                     <% students.forEach(student => { %>
                         <option value="<%= student._id %>" data-class-name="<%= student.className %>"
@@ -291,6 +291,68 @@
             updateStudentOptions(false);
         });
     </script>
+
+    <% if (user && user.role === "teacher") { %>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const subjectSelect = document.getElementById("gradeSubject");
+            const studentSelect = document.getElementById("gradeStudent");
+            const assignments = <%- JSON.stringify(teacherAssignments || []).replace(/</g, "\\u003c") %>;
+
+            if (!subjectSelect || !studentSelect) return;
+
+            const allStudentOptions = Array.from(studentSelect.options)
+                .filter(option => option.value)
+                .map(option => option.cloneNode(true));
+
+            function updateStudents() {
+                const selectedSubjectId = subjectSelect.value;
+                const selectedStudentId = studentSelect.value;
+                const allowedClasses = new Set(
+                    assignments
+                        .filter(item => String(item.subjectId) === String(selectedSubjectId))
+                        .map(item => String(item.className))
+                );
+
+                studentSelect.innerHTML = "";
+
+                const placeholder = document.createElement("option");
+                placeholder.value = "";
+
+                if (!selectedSubjectId) {
+                    placeholder.textContent = "Select a subject first";
+                    studentSelect.appendChild(placeholder);
+                    studentSelect.disabled = true;
+                    return;
+                }
+
+                const matchingStudents = allStudentOptions.filter(option =>
+                    allowedClasses.has(String(option.dataset.className || ""))
+                );
+
+                placeholder.textContent = matchingStudents.length
+                    ? "Select a student"
+                    : "No students available for this subject";
+                studentSelect.appendChild(placeholder);
+
+                matchingStudents.forEach(option => {
+                    studentSelect.appendChild(option.cloneNode(true));
+                });
+
+                studentSelect.disabled = matchingStudents.length === 0;
+
+                if (matchingStudents.some(option => option.value === selectedStudentId)) {
+                    studentSelect.value = selectedStudentId;
+                } else {
+                    studentSelect.value = "";
+                }
+            }
+
+            subjectSelect.addEventListener("change", updateStudents);
+            updateStudents();
+        });
+    </script>
+    <% } %>
 
     <%- include("partials/footer") %>
 <% if (user && user.role === "teacher") { %>

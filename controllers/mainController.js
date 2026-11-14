@@ -506,7 +506,7 @@ exports.timetableIndex = async (req, res) => {
 
         let weekStart;
         const requestedWeek = String(req.query.week || "");
-        if (/^\\d{4}-\\d{2}-\\d{2}$/.test(requestedWeek)) {
+        if (/^\d{4}-\d{2}-\d{2}$/.test(requestedWeek)) {
             const parsed = new Date(`${requestedWeek}T00:00:00.000Z`);
             if (!Number.isNaN(parsed.getTime())) weekStart = parsed;
         }

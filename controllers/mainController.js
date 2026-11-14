@@ -196,17 +196,30 @@ exports.gradebookIndex = async (req, res) => {
                     )
                 ];
 
-                const classTimetable = await TimetableEntry.find({ className: user.student.className }).populate("subject").populate("teacher");
+                const classTimetable = await TimetableEntry.find({ className: user.student.className })
+                    .populate("subject")
+                    .populate("teacher");
                 const subjectMap = new Map();
-                classTimetable.forEach(entry => {
-                    if (entry.subject) subjectMap.set(String(entry.subject._id), entry.subject);
-                });
-                subjects = [...subjectMap.values()].sort((a, b) => a.name.localeCompare(b.name));
                 const teacherMap = new Map();
                 classTimetable.forEach(entry => {
                     if (entry.teacher) teacherMap.set(String(entry.teacher._id), entry.teacher);
+                    if (entry.subject) {
+                        // A tanár a timetable bejegyzésből származik; a Subject.teacher régi adatoknál üres lehet.
+                        const subjectForView = entry.subject.toObject();
+                        if (entry.teacher) {
+                            subjectForView.teacher = entry.teacher;
+                            subjectForView.teacherName =
+                                entry.teacher.displayName ||
+                                subjectForView.teacherName ||
+                                entry.teacher.username;
+                        }
+                        subjectMap.set(String(entry.subject._id), subjectForView);
+                    }
                 });
-                teachers = [...teacherMap.values()].sort((a, b) => (a.displayName || a.username).localeCompare(b.displayName || b.username));
+                subjects = [...subjectMap.values()].sort((a, b) => a.name.localeCompare(b.name));
+                teachers = [...teacherMap.values()].sort((a, b) =>
+                    (a.displayName || a.username).localeCompare(b.displayName || b.username)
+                );
             }
         }
 

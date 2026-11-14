@@ -86,7 +86,7 @@
                                 <% subjects.forEach(subject => { %>
                                     <tr>
                                         <td><%= subject.name %></td>
-                                        <td><%= subject.teacher ? (subject.teacher.displayName || subject.teacher.username) : subject.teacherName %></td>
+                                        <td><%= subject.teacher ? (subject.teacher.displayName || subject.teacherName || subject.teacher.username) : subject.teacherName %></td>
                                         <td>
                                             <% if (subject.teacher && teachers && teachers.some(t => String(t._id) === String(subject.teacher._id))) { %>
                                                 <a class="btn btn-sm btn-primary" href="/messages?to=<%= subject.teacher._id %>">Message</a>

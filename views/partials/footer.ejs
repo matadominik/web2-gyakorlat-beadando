@@ -11,12 +11,11 @@
                             <a class="nav-link" href="/">Home</a>
                         </li>
 
-                        <li class="nav-item <%= currentPath === '/gradebook' ? 'active' : '' %>">
-                            <a class="nav-link" href="/gradebook">Gradebook</a>
+                        <li class="nav-item <%= currentPath === '/database' ? 'active' : '' %>">
+                            <a class="nav-link" href="/database">Database</a>
                         </li>
-
                         <li class="nav-item <%= currentPath === '/stats' ? 'active' : '' %>">
-                            <a class="nav-link" href="/stats">Statistics</a>
+                            <a class="nav-link" href="/stats">Diagram</a>
                         </li>
 
                         <li class="nav-item <%= currentPath === '/contact' ? 'active' : '' %>">
@@ -24,14 +23,14 @@
                         </li>
 
                         <% if (user) { %>
-                            <li class="nav-item <%= currentPath === '/feedback' ? 'active' : '' %>">
-                                <a class="nav-link" href="/feedback">Messages</a>
+                            <li class="nav-item <%= currentPath === '/inbox' ? 'active' : '' %>">
+                                <a class="nav-link" href="/inbox">Messages</a>
                             </li>
                         <% } %>
 
-                        <% if (user && user.role === "admin") { %>
+                        <% if (user && ["admin", "superadmin"].includes(user.role)) { %>
                             <li class="nav-item <%= currentPath === '/manage-grades' ? 'active' : '' %>">
-                                <a class="nav-link" href="/manage-grades">Manage Grades</a>
+                                <a class="nav-link" href="/manage-grades">CRUD</a>
                             </li>
                         <% } %>
                     </ul>

@@ -37,27 +37,29 @@ const requireTeacher = (req, res, next) => {
 };
 
 router.get("/", controller.homeIndex);
+router.get("/database", controller.databaseIndex);
 router.get("/register", controller.registerGet);
 router.post("/register", controller.registerPost);
 router.get("/login", controller.loginGet);
 router.post("/login", controller.loginPost);
 router.get("/contact", controller.contactGet);
 router.post("/contact", controller.contactPost);
-router.get("/contact/inbox", isLoggedIn, requireRole("superadmin"), controller.feedbackIndex);
+router.get("/inbox", isLoggedIn, requireRole("user", "teacher", "admin", "superadmin"), controller.feedbackIndex);
+router.get("/contact/inbox", isLoggedIn, requireRole("admin", "superadmin"), controller.feedbackIndex);
 
 router.get("/messages", isLoggedIn, requireRole("user", "teacher"), controller.messagesIndex);
 router.post("/messages/send", isLoggedIn, requireRole("user", "teacher"), controller.sendDirectMessage);
 
 router.get("/gradebook", isLoggedIn, requireRole("user"), controller.gradebookIndex);
-router.get("/stats", isLoggedIn, requireRole("user"), controller.statsIndex);
+router.get("/stats", controller.statsIndex);
 router.get("/timetable", isLoggedIn, requireRole("user", "teacher", "admin"), controller.timetableIndex);
 
 router.get("/logout", isLoggedIn, controller.logout);
 
-router.get("/manage-grades", isLoggedIn, requireTeacher, controller.manageGradesIndex);
-router.post("/manage-grades/create", isLoggedIn, requireTeacher, controller.gradeCreate);
-router.post("/manage-grades/update", isLoggedIn, requireTeacher, controller.gradeUpdate);
-router.post("/manage-grades/delete", isLoggedIn, requireTeacher, controller.gradeDelete);
+router.get("/manage-grades", isLoggedIn, requireRole("teacher", "admin", "superadmin"), controller.manageGradesIndex);
+router.post("/manage-grades/create", isLoggedIn, requireRole("teacher", "admin", "superadmin"), controller.gradeCreate);
+router.post("/manage-grades/update", isLoggedIn, requireRole("teacher", "admin", "superadmin"), controller.gradeUpdate);
+router.post("/manage-grades/delete", isLoggedIn, requireRole("teacher", "admin", "superadmin"), controller.gradeDelete);
 
 router.get("/manage-teachers", isLoggedIn, requireRole("superadmin"), controller.manageTeachersIndex);
 router.post("/manage-teachers/approve-user", isLoggedIn, requireRole("superadmin"), controller.approveUser);

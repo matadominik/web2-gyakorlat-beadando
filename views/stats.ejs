@@ -49,20 +49,35 @@
                 </div>
                 <div class="stats-card">
                     <h4 class="mb-4">Distribution by grade</h4>
-                    <% const maxCount = Math.max(1, ...gradeCounts); %>
-                    <% gradeCounts.forEach((count, index) => { %>
-                        <div class="grade-row">
-                            <div class="grade-label">Grade <%= index + 1 %></div>
-                            <div class="grade-track">
-                                <div class="grade-fill" style="width:<%= (count / maxCount) * 100 %>%"></div>
-                            </div>
-                            <div class="text-right"><%= count %></div>
-                        </div>
-                    <% }) %>
+                    <canvas id="gradeChart" aria-label="Grade distribution chart" role="img"></canvas>
                 </div>
             <% } %>
         </div>
     </section>
     <%- include("partials/footer") %>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const gradeChartCanvas = document.getElementById("gradeChart");
+        if (gradeChartCanvas) {
+            new Chart(gradeChartCanvas, {
+                type: "bar",
+                data: {
+                    labels: ["Grade 1", "Grade 2", "Grade 3", "Grade 4", "Grade 5"],
+                    datasets: [{
+                        label: "Number of grades",
+                        data: <%- JSON.stringify(gradeCounts) %>,
+                        backgroundColor: ["#d9534f", "#f0ad4e", "#5bc0de", "#5cb85c", "#3978c5"],
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
+                    plugins: { legend: { display: true } }
+                }
+            });
+        }
+    </script>
 </body>
 </html>

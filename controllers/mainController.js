@@ -136,7 +136,37 @@ exports.statsIndex = async (req, res) => {
 
 exports.manageGradesIndex = async (req, res) => {
     try {
-        const students = await Student.find().sort({ name: 1 });
+        const isTeacherView = ["teacher", "admin"].includes(req.session.user.role);
+        let students;
+        let existingUsers;
+        let teacherClassNames = [];
+
+        if (isTeacherView) {
+            const teacherEntries = await TimetableEntry.find({ teacher: req.session.user.id }).populate("subject");
+            teacherClassNames = [...new Set(teacherEntries.map(entry => entry.className))];
+            const teacherStudents = await Student.find({ className: { $in: teacherClassNames } }).sort({ name: 1 });
+            const teacherSubjectsByClass = {};
+            teacherEntries.forEach(entry => {
+                teacherSubjectsByClass[entry.className] ||= new Set();
+                if (entry.subject) teacherSubjectsByClass[entry.className].add(entry.subject.name);
+            });
+            students = teacherStudents;
+            existingUsers = await User.find({ role: "user", student: { $in: teacherStudents.map(student => student._id) } })
+                .populate("student").sort({ username: 1 });
+            existingUsers = existingUsers.map(account => {
+                const student = account.student;
+                return {
+                    ...account.toObject(),
+                    student,
+                    subjectsForStudent: student ? [...(teacherSubjectsByClass[student.className] || [])].sort() : []
+                };
+            });
+        } else {
+            students = await Student.find().sort({ name: 1 });
+            existingUsers = await User.find({ role: "user", status: { $ne: "pending" } })
+                .populate("student").sort({ username: 1 });
+        }
+
         const subjects = await Subject.find().populate("teacher").sort({ name: 1 });
         const classes = await SchoolClass.find().sort({ name: 1 });
 
@@ -193,10 +223,6 @@ exports.manageGradesIndex = async (req, res) => {
         const pendingUsers = await User.find({ role: "user", status: "pending" })
             .populate("student")
             .sort({ username: 1 });
-        const existingUsers = await User.find({ role: "user", status: { $ne: "pending" } })
-            .populate("student")
-            .sort({ username: 1 });
-
         let editGrade = null;
         if (req.query.edit) {
             editGrade = await Grade.findById(req.query.edit);
@@ -211,7 +237,8 @@ exports.manageGradesIndex = async (req, res) => {
             pendingUsers,
             existingUsers,
             filters: { className, studentId, dateFrom, dateTo },
-            canApproveStudents
+            canApproveStudents,
+            isTeacherView
         });
     } catch (err) {
         console.error("Manage grades error:", err);
@@ -471,13 +498,50 @@ exports.deleteTimetableEntry = async (req, res) => {
 exports.timetableIndex = async (req, res) => {
     try {
         const user = await User.findById(req.session.user.id).populate("student");
-        if (!user || !user.student) return res.status(404).send("Student profile not found.");
+        if (!user) return res.status(404).send("User not found.");
         const now = new Date();
         const year = now.getUTCMonth() >= 8 ? now.getUTCFullYear() : now.getUTCFullYear() - 1;
         const periodStart = new Date(Date.UTC(year, 8, 1));
         const periodEnd = new Date(Date.UTC(year + 1, 4, 31, 23, 59, 59, 999));
-        const timetableEntries = await TimetableEntry.find({ className: user.student.className, activeFrom: { $lte: now }, activeTo: { $gte: now } }).populate("subject").populate("teacher").sort({ dayOfWeek: 1, startTime: 1 });
-        res.render("timetable", { timetableEntries, className: user.student.className, periodStart, periodEnd });
+
+        let weekStart;
+        const requestedWeek = String(req.query.week || "");
+        if (/^\\d{4}-\\d{2}-\\d{2}$/.test(requestedWeek)) {
+            const parsed = new Date(`${requestedWeek}T00:00:00.000Z`);
+            if (!Number.isNaN(parsed.getTime())) weekStart = parsed;
+        }
+        if (!weekStart) {
+            weekStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+            const weekday = weekStart.getUTCDay() || 7;
+            weekStart.setUTCDate(weekStart.getUTCDate() - weekday + 1);
+        }
+        weekStart.setUTCHours(0, 0, 0, 0);
+        const weekEnd = new Date(weekStart);
+        weekEnd.setUTCDate(weekEnd.getUTCDate() + 6);
+        const previousWeek = new Date(weekStart);
+        previousWeek.setUTCDate(previousWeek.getUTCDate() - 7);
+        const nextWeek = new Date(weekStart);
+        nextWeek.setUTCDate(nextWeek.getUTCDate() + 7);
+
+        const isTeacher = ["teacher", "admin"].includes(user.role);
+        let timetableQuery;
+        let className = "";
+        if (isTeacher) {
+            timetableQuery = { teacher: user._id };
+        } else {
+            if (!user.student) return res.status(404).send("Student profile not found.");
+            className = user.student.className;
+            timetableQuery = { className };
+        }
+        timetableQuery.activeFrom = { $lte: weekEnd };
+        timetableQuery.activeTo = { $gte: weekStart };
+        const timetableEntries = await TimetableEntry.find(timetableQuery)
+            .populate("subject").populate("teacher").sort({ dayOfWeek: 1, startTime: 1 });
+
+        res.render("timetable", {
+            timetableEntries, className, periodStart, periodEnd, weekStart, weekEnd,
+            previousWeek, nextWeek, isTeacher
+        });
     } catch (err) {
         console.error("Timetable error:", err);
         res.status(500).send("Could not load the timetable.");

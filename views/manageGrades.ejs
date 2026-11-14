@@ -81,7 +81,7 @@
                 </thead>
                 <tbody>
                     <% if (!existingUsers || existingUsers.length === 0) { %>
-                        <tr><td colspan="4">No approved or rejected student accounts found.</td></tr>
+                        <tr><td colspan="4"><%= isTeacherView ? "No students attend your classes yet." : "No approved or rejected student accounts found." %></td></tr>
                     <% } else { %>
                         <% existingUsers.forEach(existingUser => { %>
                             <tr>

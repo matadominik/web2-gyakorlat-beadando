@@ -46,7 +46,7 @@ router.post("/contact", controller.contactPost);
 
 router.get("/gradebook", isLoggedIn, requireRole("user"), controller.gradebookIndex);
 router.get("/stats", isLoggedIn, requireRole("user"), controller.statsIndex);
-router.get("/timetable", isLoggedIn, requireRole("user"), controller.timetableIndex);
+router.get("/timetable", isLoggedIn, requireRole("user", "teacher", "admin"), controller.timetableIndex);
 router.get("/feedback", isLoggedIn, requireTeacher, controller.feedbackIndex);
 router.get("/logout", isLoggedIn, controller.logout);
 

@@ -258,37 +258,45 @@
     }
 }
 
-html, body {
+html,
+body {
     max-width: 100%;
     overflow-x: hidden;
 }
 
-img, video, iframe {
+img,
+video,
+iframe {
     max-width: 100%;
     height: auto;
 }
 
-.container, .container-fluid {
+.container,
+.container-fluid {
     width: 100%;
 }
 
-.table-responsive, .table {
+.table-responsive,
+.table {
     max-width: 100%;
 }
 
 .table {
-    display: block;
     width: 100%;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
 }
 
-.table th, .table td {
+.table th,
+.table td {
     white-space: nowrap;
     vertical-align: middle;
 }
 
-input, select, textarea, .form-control {
+input,
+select,
+textarea,
+.form-control {
     max-width: 100%;
 }
 
@@ -297,7 +305,9 @@ input, select, textarea, .form-control {
 }
 
 @media (max-width: 768px) {
-    main.container, .container.py-5, .event_section .container {
+    main.container,
+    .container.py-5,
+    .event_section .container {
         padding-left: 15px;
         padding-right: 15px;
     }
@@ -332,7 +342,9 @@ input, select, textarea, .form-control {
         font-size: 1.35rem;
     }
 
-    .card, .stats-card, .message-panel {
+    .card,
+    .stats-card,
+    .message-panel {
         padding: 14px;
     }
 
@@ -351,7 +363,8 @@ input, select, textarea, .form-control {
 }
 
 @media (max-width: 480px) {
-    .container, .container-fluid {
+    .container,
+    .container-fluid {
         padding-left: 12px;
         padding-right: 12px;
     }
@@ -361,15 +374,19 @@ input, select, textarea, .form-control {
         padding-bottom: 1.5rem !important;
     }
 
-    .btn, button {
+    .btn,
+    button {
         max-width: 100%;
     }
 
-    .form-group, .form-row, .row {
+    .form-group,
+    .form-row,
+    .row {
         min-width: 0;
     }
 
-    .table th, .table td {
+    .table th,
+    .table td {
         padding: .45rem;
         font-size: .85rem;
     }
@@ -384,24 +401,37 @@ input, select, textarea, .form-control {
 }
 
 @media (min-width: 769px) {
-    main.container,
-    .container.py-5 {
+    body.sub_page main.container,
+    body.sub_page .container.py-5,
+    body.sub_page main.container-fluid,
+    body.sub_page .container-fluid.py-5 {
         width: calc(100% - 64px);
         max-width: 1200px;
         margin-left: auto !important;
         margin-right: auto !important;
     }
 
-    main.container > .table-responsive,
-    .container.py-5 .table-responsive {
+    body.sub_page main.container > .table-responsive,
+    body.sub_page .container.py-5 .table-responsive,
+    body.sub_page main.container-fluid > .table-responsive,
+    body.sub_page .container-fluid.py-5 .table-responsive {
         width: 100%;
         margin-left: auto;
         margin-right: auto;
     }
 
-    main.container .table,
-    .container.py-5 .table {
+    body.sub_page main.container .table,
+    body.sub_page .container.py-5 .table,
+    body.sub_page main.container-fluid .table,
+    body.sub_page .container-fluid.py-5 .table {
         width: 100%;
+    }
+
+    body.sub_page main.container > *,
+    body.sub_page .container.py-5 > *,
+    body.sub_page main.container-fluid > *,
+    body.sub_page .container-fluid.py-5 > * {
+        max-width: 100%;
     }
 }
 

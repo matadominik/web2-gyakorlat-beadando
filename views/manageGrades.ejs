@@ -153,11 +153,6 @@
                     value="<%= editGrade && editGrade.date ? new Date(editGrade.date).toISOString().slice(0, 10) : '' %>">
             </div>
 
-            <div class="form-group mb-3">
-                <label>Notes</label>
-                <input type="text" name="note" class="form-control"
-                    value="<%= editGrade ? editGrade.note : '' %>">
-            </div>
 
             <button type="submit" class="btn btn-primary">
                 <%= editGrade ? "Save Changes" : "Add Grade" %>
@@ -221,7 +216,7 @@
                         <th>Grade</th>
                         <th>Type</th>
                         <th>Date</th>
-                        <th>Notes</th>
+                        <th>Given by</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -240,7 +235,7 @@
                             <td><%= grade.value %></td>
                             <td><%= grade.type %></td>
                             <td><%= grade.date ? new Date(grade.date).toLocaleDateString("en-GB") : "-" %></td>
-                            <td><%= grade.note || "-" %></td>
+                            <td><%= grade.teacher ? (grade.teacher.displayName || grade.teacher.username) : "Unknown" %></td>
                             <td>
                                 <a href="/manage-grades?edit=<%= grade._id %>"
                                    class="btn btn-sm btn-warning mb-1">

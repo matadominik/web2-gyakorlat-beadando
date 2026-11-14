@@ -108,7 +108,7 @@
                                 <th>Grade</th>
                                 <th>Type</th>
                                 <th>Date</th>
-                                <th>Notes</th>
+                                <th>Given by</th>
                             </tr>
                         </thead>
 
@@ -133,7 +133,7 @@
                                                 : "-" %>
                                         </td>
 
-                                        <td><%= grade.note || "-" %></td>
+                                        <td><%= grade.teacher ? (grade.teacher.displayName || grade.teacher.username) : "Unknown" %></td>
                                     </tr>
                                 <% }) %>
                             <% } else { %>

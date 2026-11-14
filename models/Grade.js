@@ -11,6 +11,11 @@ const gradeSchema = new mongoose.Schema({
         ref: "Subject",
         required: true
     },
+    teacher: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        default: null
+    },
     value: {
         type: Number,
         required: true,
@@ -24,10 +29,6 @@ const gradeSchema = new mongoose.Schema({
     type: {
         type: String,
         required: true,
-        trim: true
-    },
-    note: {
-        type: String,
         trim: true
     }
 });

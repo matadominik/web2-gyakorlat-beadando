@@ -308,7 +308,7 @@ exports.statsIndex = async (req, res) => {
 
 exports.manageGradesIndex = async (req, res) => {
     try {
-        const isTeacherView = ["teacher", "admin"].includes(req.session.user.role);
+        const isTeacherView = req.session.user.role === "teacher";
         let students;
         let existingUsers;
         let teacherClassNames = [];

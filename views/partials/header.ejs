@@ -55,9 +55,9 @@
                                 <a class="nav-link" href="/messages">School Chat</a>
                             </li>
                         <% } %>
-                        <% if (["admin", "superadmin"].includes(user.role)) { %>
+                        <% if (["teacher", "admin", "superadmin"].includes(user.role)) { %>
                             <li class="nav-item <%= currentPath === '/manage-grades' ? 'active' : '' %>">
-                                <a class="nav-link" href="/manage-grades">CRUD</a>
+                                <a class="nav-link" href="/manage-grades"><%= user.role === "teacher" ? "Manage Grades" : "CRUD" %></a>
                             </li>
                         <% } %>
 

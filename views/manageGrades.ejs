@@ -18,7 +18,7 @@
     </div>
 
     <div class="container py-5">
-        <h1 class="mb-4">Manage Grades</h1>
+        <h1 class="mb-4"><%= user && user.role === "teacher" ? "My Teaching and Grades" : "Manage Grades" %></h1>
 
         <% if (typeof message !== "undefined" && message) { %>
             <div class="alert alert-info"><%= message %></div>
@@ -67,37 +67,42 @@
         </section>
         <% } %>
 
+        <% if (user && user.role === "teacher") { %>
         <hr>
-
-        <h3 class="mb-3">Student Accounts</h3>
-        <div class="table-responsive mb-5">
-            <table class="table table-bordered table-striped">
-                <thead>
-                    <tr>
-                        <th>Username</th>
-                        <th>Student</th>
-                        <th>Class</th>
-                        <th>Subjects</th>
-                        <% if (user && user.role === "teacher") { %><th>Message</th><% } %>
-                    </tr>
-                </thead>
-                <tbody>
-                    <% if (!existingUsers || existingUsers.length === 0) { %>
-                        <tr><td colspan="<%= user && user.role === 'teacher' ? 5 : 4 %>"><%= isTeacherView ? "No students attend your classes yet." : "No approved or rejected student accounts found." %></td></tr>
-                    <% } else { %>
-                        <% existingUsers.forEach(existingUser => { %>
-                            <tr>
-                                <td><%= existingUser.username %></td>
-                                <td><%= existingUser.student ? existingUser.student.name : "Not linked (legacy account)" %></td>
-                                <td><%= existingUser.student ? existingUser.student.className : "-" %></td>
-                                <td><%= isTeacherView ? ((existingUser.subjectsForStudent || []).join(", ") || "No assigned subjects") : (existingUser.status || "approved") %></td>
-                                <% if (user && user.role === "teacher") { %><td><a class="btn btn-sm btn-primary" href="/messages?to=<%= existingUser._id %>">Message</a></td><% } %>
-                            </tr>
-                        <% }) %>
-                    <% } %>
-                </tbody>
-            </table>
-        </div>
+        <section class="mb-5">
+            <h3 class="mb-3">Students in Your Classes</h3>
+            <p class="text-muted">Only students from classes where you teach are listed. The Subjects column shows the subjects you teach to each class.</p>
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Student</th>
+                            <th>Class</th>
+                            <th>Subjects</th>
+                            <th>Message</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if (!existingUsers || existingUsers.length === 0) { %>
+                            <tr><td colspan="5">No students attend your classes yet.</td></tr>
+                        <% } else { %>
+                            <% existingUsers.forEach(existingUser => { %>
+                                <tr>
+                                    <td><%= existingUser.username %></td>
+                                    <td><%= existingUser.student ? existingUser.student.name : "Not linked" %></td>
+                                    <td><%= existingUser.student ? existingUser.student.className : "-" %></td>
+                                    <td><%= (existingUser.subjectsForStudent || []).join(", ") || "No subjects assigned" %></td>
+                                    <td><a class="btn btn-sm btn-primary" href="/messages?to=<%= existingUser._id %>">Message</a></td>
+                                </tr>
+                            <% }) %>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        <hr>
+        <% } %>
 
         <hr>
 
@@ -355,54 +360,5 @@
     <% } %>
 
     <%- include("partials/footer") %>
-<% if (user && user.role === "teacher") { %>
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const subjectSelect = document.getElementById("gradeSubject");
-            const studentSelect = document.getElementById("gradeStudent");
-            const assignments = <%- JSON.stringify(teacherAssignments || []) %>;
-
-            if (!subjectSelect || !studentSelect) return;
-
-            const originalOptions = Array.from(studentSelect.querySelectorAll("option[data-class-name]"));
-            const selectedStudent = studentSelect.value;
-
-            function updateStudents() {
-                const subjectId = subjectSelect.value;
-                const allowedClasses = new Set(
-                    assignments
-                        .filter(item => String(item.subjectId) === String(subjectId))
-                        .map(item => String(item.className))
-                );
-
-                originalOptions.forEach(option => {
-                    option.disabled = !subjectId || !allowedClasses.has(String(option.dataset.className));
-                    option.hidden = option.disabled;
-                });
-
-                studentSelect.disabled = !subjectId || allowedClasses.size === 0;
-
-                const currentOption = studentSelect.options[studentSelect.selectedIndex];
-                if (!currentOption || currentOption.disabled) {
-                    studentSelect.value = "";
-                }
-
-                const placeholder = studentSelect.querySelector('option:not([data-class-name])');
-                if (placeholder) {
-                    placeholder.textContent = subjectId
-                        ? (allowedClasses.size ? "Select a student" : "No students available for this subject")
-                        : "Select a subject first";
-                }
-            }
-
-            subjectSelect.addEventListener("change", updateStudents);
-            updateStudents();
-
-            if (selectedStudent && !studentSelect.value) {
-                studentSelect.value = selectedStudent;
-            }
-        });
-    </script>
-<% } %>
 </body>
 </html>

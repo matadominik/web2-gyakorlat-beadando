@@ -77,11 +77,12 @@
                         <th>Student</th>
                         <th>Class</th>
                         <th>Subjects</th>
+                        <% if (user && user.role === "teacher") { %><th>Message</th><% } %>
                     </tr>
                 </thead>
                 <tbody>
                     <% if (!existingUsers || existingUsers.length === 0) { %>
-                        <tr><td colspan="4"><%= isTeacherView ? "No students attend your classes yet." : "No approved or rejected student accounts found." %></td></tr>
+                        <tr><td colspan="<%= user && user.role === 'teacher' ? 5 : 4 %>"><%= isTeacherView ? "No students attend your classes yet." : "No approved or rejected student accounts found." %></td></tr>
                     <% } else { %>
                         <% existingUsers.forEach(existingUser => { %>
                             <tr>
@@ -89,6 +90,7 @@
                                 <td><%= existingUser.student ? existingUser.student.name : "Not linked (legacy account)" %></td>
                                 <td><%= existingUser.student ? existingUser.student.className : "-" %></td>
                                 <td><%= isTeacherView ? ((existingUser.subjectsForStudent || []).join(", ") || "No assigned subjects") : (existingUser.status || "approved") %></td>
+                                <% if (user && user.role === "teacher") { %><td><a class="btn btn-sm btn-primary" href="/messages?to=<%= existingUser._id %>">Message</a></td><% } %>
                             </tr>
                         <% }) %>
                     <% } %>

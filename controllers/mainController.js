@@ -1,6 +1,7 @@
 
 const User = require("../models/User");
 const SentMessage = require("../models/Message");
+const DirectMessage = require("../models/DirectMessage");
 const bcrypt = require("bcrypt");
 
 const Student = require("../models/Student");
@@ -8,6 +9,51 @@ const Subject = require("../models/Subject");
 const Grade = require("../models/Grade");
 const SchoolClass = require("../models/SchoolClass");
 const TimetableEntry = require("../models/TimetableEntry");
+
+const getAccountLabel = (account) => {
+    if (!account) return "Unknown user";
+    if (account.student && account.student.name) return account.student.name;
+    return account.displayName || account.username || "Unknown user";
+};
+
+async function canUsersMessage(first, second) {
+    if (!first || !second || first._id.equals(second._id)) return false;
+    const roles = [first.role, second.role].sort().join(":");
+    if (roles !== "teacher:user") return false;
+
+    const studentAccount = first.role === "user" ? first : second;
+    const teacherAccount = first.role === "teacher" ? first : second;
+    const student = await Student.findById(studentAccount.student);
+    if (!student) return false;
+
+    const timetableLink = await TimetableEntry.exists({
+        teacher: teacherAccount._id,
+        className: student.className
+    });
+    if (timetableLink) return true;
+
+    return false;
+}
+
+async function getAllowedMessageContacts(account) {
+    if (account.role === "user") {
+        const student = await Student.findById(account.student);
+        if (!student) return [];
+        const entries = await TimetableEntry.find({ className: student.className }).distinct("teacher");
+        const ids = [...new Set(entries.map(id => String(id)))];
+        const teachers = await User.find({ _id: { $in: ids }, role: "teacher", status: { $nin: ["disabled", "rejected", "pending"] } }).sort({ displayName: 1, username: 1 });
+        const assignedSubjects = await Subject.find({ teacher: { $in: teachers.map(t => t._id) } }).select("teacher teacherName");
+        const teacherNames = new Map(assignedSubjects.map(subject => [String(subject.teacher), subject.teacherName]));
+        return teachers.map(t => ({ _id: t._id, label: `${t.displayName || teacherNames.get(String(t._id)) || t.username} (Teacher)`, role: t.role }));
+    }
+    if (account.role === "teacher") {
+        const classNames = await TimetableEntry.find({ teacher: account._id }).distinct("className");
+        const students = await Student.find({ className: { $in: classNames } });
+        const users = await User.find({ role: "user", student: { $in: students.map(s => s._id) }, status: { $nin: ["disabled", "rejected", "pending"] } }).populate("student").sort({ username: 1 });
+        return users.map(u => ({ _id: u._id, label: `${getAccountLabel(u)} (${u.student ? u.student.className : "Student"})`, role: u.role, className: u.student ? u.student.className : "" }));
+    }
+    return [];
+}
 
 exports.homeIndex = (req, res) => {
     res.render("home");
@@ -23,6 +69,87 @@ exports.feedbackIndex = async (req, res) => {
     }
 };
 
+exports.messagesIndex = async (req, res) => {
+    try {
+        const account = await User.findById(req.session.user.id).populate("student");
+        const contacts = await getAllowedMessageContacts(account);
+        const selectedId = String(req.query.to || "");
+        let selectedContact = null;
+        if (selectedId && /^[a-fA-F0-9]{24}$/.test(selectedId)) {
+            selectedContact = contacts.find(c => String(c._id) === selectedId) || null;
+        }
+
+        const messages = await DirectMessage.find({
+            $or: [{ sender: account._id }, { recipient: account._id }]
+        }).sort({ createdAt: 1 }).populate("sender", "username displayName role student").populate({ path: "sender", populate: { path: "student" } });
+
+        const conversationMap = new Map();
+        for (const item of messages) {
+            const otherId = String(item.sender._id) === String(account._id) ? String(item.recipient) : String(item.sender._id);
+            const contact = contacts.find(c => String(c._id) === otherId);
+            if (!contact) continue;
+            if (!conversationMap.has(otherId)) conversationMap.set(otherId, { contact, messages: [] });
+            conversationMap.get(otherId).messages.push(item);
+        }
+
+        let thread = [];
+        if (selectedContact) {
+            thread = messages.filter(m =>
+                (String(m.sender._id) === String(account._id) && String(m.recipient) === selectedId) ||
+                (String(m.sender._id) === selectedId && String(m.recipient) === String(account._id))
+            );
+            await DirectMessage.updateMany({ sender: selectedId, recipient: account._id, readAt: null }, { $set: { readAt: new Date() } });
+        }
+
+        res.render("messages", {
+            contacts,
+            conversations: [...conversationMap.values()].sort((a, b) => new Date(b.messages[b.messages.length - 1].createdAt) - new Date(a.messages[a.messages.length - 1].createdAt)),
+            selectedContact,
+            thread,
+            currentAccount: account
+        });
+    } catch (err) {
+        console.error("Messages page error:", err);
+        res.status(500).send("Could not load messages.");
+    }
+};
+
+exports.sendDirectMessage = async (req, res) => {
+    try {
+        const recipientId = String(req.body.recipient || "");
+        const body = String(req.body.body || "").trim();
+        if (!/^[a-fA-F0-9]{24}$/.test(recipientId) || body.length < 1 || body.length > 4000) {
+            req.session.message = "Please select a recipient and enter a message (maximum 4000 characters).";
+            return res.redirect("/messages");
+        }
+        const sender = await User.findById(req.session.user.id).populate("student");
+        const recipient = await User.findById(recipientId).populate("student");
+        if (!recipient || !["user", "teacher"].includes(recipient.role) || !(await canUsersMessage(sender, recipient))) {
+            req.session.message = "You are not allowed to message this user.";
+            return res.redirect("/messages");
+        }
+        let senderName = getAccountLabel(sender);
+        if (sender.role === "teacher" && !sender.displayName) {
+            const assignedSubject = await Subject.findOne({ teacher: sender._id }).select("teacherName");
+            if (assignedSubject && assignedSubject.teacherName) senderName = assignedSubject.teacherName;
+        }
+        await DirectMessage.create({
+            sender: sender._id,
+            recipient: recipient._id,
+            body,
+            senderName,
+            senderRole: sender.role,
+            senderClass: sender.student ? sender.student.className : ""
+        });
+        req.session.message = "Message sent.";
+        res.redirect(`/messages?to=${recipient._id}`);
+    } catch (err) {
+        console.error("Send message error:", err);
+        req.session.message = "Could not send the message.";
+        res.redirect("/messages");
+    }
+};
+
 exports.gradebookIndex = async (req, res) => {
     try {
         if (!req.session.user) {
@@ -32,6 +159,7 @@ exports.gradebookIndex = async (req, res) => {
         let students = [];
         let subjects = [];
         let grades = [];
+        let teachers = [];
         let accountNotLinked = false;
 
         if (req.session.user.role === "admin") {
@@ -68,9 +196,17 @@ exports.gradebookIndex = async (req, res) => {
                     )
                 ];
 
-                subjects = await Subject.find({
-                    _id: { $in: subjectIds }
-                }).sort({ name: 1 });
+                const classTimetable = await TimetableEntry.find({ className: user.student.className }).populate("subject").populate("teacher");
+                const subjectMap = new Map();
+                classTimetable.forEach(entry => {
+                    if (entry.subject) subjectMap.set(String(entry.subject._id), entry.subject);
+                });
+                subjects = [...subjectMap.values()].sort((a, b) => a.name.localeCompare(b.name));
+                const teacherMap = new Map();
+                classTimetable.forEach(entry => {
+                    if (entry.teacher) teacherMap.set(String(entry.teacher._id), entry.teacher);
+                });
+                teachers = [...teacherMap.values()].sort((a, b) => (a.displayName || a.username).localeCompare(b.displayName || b.username));
             }
         }
 
@@ -78,6 +214,7 @@ exports.gradebookIndex = async (req, res) => {
             students,
             subjects,
             grades,
+            teachers,
             accountNotLinked
         });
     } catch (err) {
@@ -700,8 +837,13 @@ exports.logout = (req, res) => {
     });
 };
 
-exports.contactGet = (req, res) => {
-    res.render("contact");
+exports.contactGet = async (req, res) => {
+    let contactIdentity = null;
+    if (req.session.user) {
+        const account = await User.findById(req.session.user.id).populate("student");
+        if (account) contactIdentity = { name: getAccountLabel(account), email: account.username };
+    }
+    res.render("contact", { contactIdentity });
 };
 
 exports.contactPost = async (req, res) => {

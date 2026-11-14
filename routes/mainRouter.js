@@ -43,11 +43,15 @@ router.get("/login", controller.loginGet);
 router.post("/login", controller.loginPost);
 router.get("/contact", controller.contactGet);
 router.post("/contact", controller.contactPost);
+router.get("/contact/inbox", isLoggedIn, requireRole("superadmin"), controller.feedbackIndex);
+
+router.get("/messages", isLoggedIn, requireRole("user", "teacher"), controller.messagesIndex);
+router.post("/messages/send", isLoggedIn, requireRole("user", "teacher"), controller.sendDirectMessage);
 
 router.get("/gradebook", isLoggedIn, requireRole("user"), controller.gradebookIndex);
 router.get("/stats", isLoggedIn, requireRole("user"), controller.statsIndex);
 router.get("/timetable", isLoggedIn, requireRole("user", "teacher", "admin"), controller.timetableIndex);
-router.get("/feedback", isLoggedIn, requireTeacher, controller.feedbackIndex);
+
 router.get("/logout", isLoggedIn, controller.logout);
 
 router.get("/manage-grades", isLoggedIn, requireTeacher, controller.manageGradesIndex);

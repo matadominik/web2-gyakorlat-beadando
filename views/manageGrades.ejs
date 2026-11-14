@@ -76,7 +76,7 @@
                         <th>Username</th>
                         <th>Student</th>
                         <th>Class</th>
-                        <th>Status</th>
+                        <th>Subjects</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -88,7 +88,7 @@
                                 <td><%= existingUser.username %></td>
                                 <td><%= existingUser.student ? existingUser.student.name : "Not linked (legacy account)" %></td>
                                 <td><%= existingUser.student ? existingUser.student.className : "-" %></td>
-                                <td><%= existingUser.status || "approved" %></td>
+                                <td><%= isTeacherView ? ((existingUser.subjectsForStudent || []).join(", ") || "No assigned subjects") : (existingUser.status || "approved") %></td>
                             </tr>
                         <% }) %>
                     <% } %>

@@ -42,7 +42,7 @@
 <% [1,2,3,4,5].forEach(day=>{ const lesson=timetableEntries.find(e=>e.dayOfWeek===day&&e.startTime===parts[0]&&e.endTime===parts[1]); %>
 <div class="tt-cell"><% if(lesson){ %><div class="tt-lesson">
 <strong><%= lesson.subject?lesson.subject.name:"Subject" %></strong>
-<span><%= lesson.teacher?(lesson.teacher.displayName||lesson.teacher.username):"Teacher" %></span>
+<span><%= lesson.teacher ? (lesson.teacher.student && lesson.teacher.student.name ? lesson.teacher.student.name : (lesson.teacher.displayName || lesson.teacher.username)) : "Teacher" %></span>
 <% if(isTeacher){ %><span><strong>Class: <%= lesson.className %></strong></span><% } %>
 <span><%= lesson.startTime %> – <%= lesson.endTime %></span>
 </div><% } %></div>

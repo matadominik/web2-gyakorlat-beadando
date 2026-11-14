@@ -71,7 +71,7 @@
                         <% } else { %>
                             <% teachers.forEach(teacher => { %>
                                 <tr>
-                                    <td><%= teacher.displayName || teacher.username %></td>
+                                    <td><%= (teacher.student && teacher.student.name ? teacher.student.name : (teacher.displayName || teacher.username)) %></td>
                                     <td><%= teacher.username %></td>
                                     <td><%= teacher.status === "disabled" ? "Disabled" : "Active" %></td>
                                     <td>
@@ -173,7 +173,7 @@
                     <select id="subjectTeacher" name="teacherId" class="form-control" required>
                         <option value="">Select teacher</option>
                         <% teachers.filter(item => item.status !== "disabled").forEach(teacher => { %>
-                            <option value="<%= teacher._id %>"><%= teacher.displayName || teacher.username %></option>
+                            <option value="<%= teacher._id %>"><%= (teacher.student && teacher.student.name ? teacher.student.name : (teacher.displayName || teacher.username)) %></option>
                         <% }) %>
                     </select>
                 </div>
@@ -185,7 +185,7 @@
                     <tbody>
                         <% if (!subjects || !subjects.length) { %><tr><td colspan="2">No subjects have been added yet.</td></tr><% } %>
                         <% (subjects || []).forEach(subject => { %>
-                            <tr><td><%= subject.name %></td><td><%= subject.teacher ? (subject.teacher.displayName || subject.teacher.username) : (subject.teacherName || "Not assigned") %></td></tr>
+                            <tr><td><%= subject.name %></td><td><%= subject.teacher ? (subject.teacher.student && subject.teacher.student.name ? subject.teacher.student.name : (subject.teacher.displayName || subject.teacher.username)) : (subject.teacherName || "Not assigned") %></td></tr>
                         <% }) %>
                     </tbody>
                 </table>
@@ -214,7 +214,7 @@
                         <% if (!timetableEntries || !timetableEntries.length) { %><tr><td colspan="7">No timetable lessons added yet.</td></tr><% } %>
                         <% const dayNames = ["", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]; %>
                         <% (timetableEntries || []).forEach(entry => { %>
-                            <tr><td><%= entry.className %></td><td><%= dayNames[entry.dayOfWeek] || "-" %></td><td><%= entry.startTime %>–<%= entry.endTime %></td><td><%= entry.subject ? entry.subject.name : "Deleted subject" %></td><td><%= entry.teacher ? (entry.teacher.displayName || entry.teacher.username) : "Deleted teacher" %></td><td><%= new Date(entry.activeFrom).toLocaleDateString("en-GB") %> – <%= new Date(entry.activeTo).toLocaleDateString("en-GB") %></td><td><form method="POST" action="/manage-teachers/timetable/delete" onsubmit="return confirm('Delete this timetable lesson?');"><input type="hidden" name="entryId" value="<%= entry._id %>"><button class="btn btn-sm btn-danger" type="submit">Delete</button></form></td></tr>
+                            <tr><td><%= entry.className %></td><td><%= dayNames[entry.dayOfWeek] || "-" %></td><td><%= entry.startTime %>–<%= entry.endTime %></td><td><%= entry.subject ? entry.subject.name : "Deleted subject" %></td><td><%= entry.teacher ? (entry.teacher.student && entry.teacher.student.name ? entry.teacher.student.name : (entry.teacher.displayName || entry.teacher.username)) : "Deleted teacher" %></td><td><%= new Date(entry.activeFrom).toLocaleDateString("en-GB") %> – <%= new Date(entry.activeTo).toLocaleDateString("en-GB") %></td><td><form method="POST" action="/manage-teachers/timetable/delete" onsubmit="return confirm('Delete this timetable lesson?');"><input type="hidden" name="entryId" value="<%= entry._id %>"><button class="btn btn-sm btn-danger" type="submit">Delete</button></form></td></tr>
                         <% }) %>
                     </tbody>
                 </table>

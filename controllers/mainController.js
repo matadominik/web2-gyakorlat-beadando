@@ -296,12 +296,12 @@ exports.rejectUser = async (req, res) => {
 
 exports.manageTeachersIndex = async (req, res) => {
     try {
-        const teachers = await User.find({ role: { $in: ["teacher", "admin"] } }).sort({ username: 1 });
+        const teachers = await User.find({ role: { $in: ["teacher", "admin"] } }).populate("student").sort({ username: 1 });
         const studentAccounts = await User.find({ role: "user" }).populate("student").sort({ username: 1 });
         const pendingUsers = await User.find({ role: "user", status: "pending" }).populate("student").sort({ username: 1 });
         const classes = await SchoolClass.find().sort({ name: 1 });
-        const subjects = await Subject.find().populate("teacher").sort({ name: 1 });
-        const timetableEntries = await TimetableEntry.find().populate("subject").populate("teacher").sort({ className: 1, dayOfWeek: 1, startTime: 1 });
+        const subjects = await Subject.find().populate({ path: "teacher", populate: { path: "student" } }).sort({ name: 1 });
+        const timetableEntries = await TimetableEntry.find().populate("subject").populate({ path: "teacher", populate: { path: "student" } }).sort({ className: 1, dayOfWeek: 1, startTime: 1 });
         const academicYearStart = new Date().getMonth() >= 8 ? new Date().getFullYear() : new Date().getFullYear() - 1;
         res.render("manageTeachers", { teachers, studentAccounts, pendingUsers, classes, subjects, timetableEntries, defaultActiveFrom: `${academicYearStart}-09-01`, defaultActiveTo: `${academicYearStart + 1}-05-31` });
     } catch (err) {
@@ -536,7 +536,7 @@ exports.timetableIndex = async (req, res) => {
         timetableQuery.activeFrom = { $lte: weekEnd };
         timetableQuery.activeTo = { $gte: weekStart };
         const timetableEntries = await TimetableEntry.find(timetableQuery)
-            .populate("subject").populate("teacher").sort({ dayOfWeek: 1, startTime: 1 });
+            .populate("subject").populate({ path: "teacher", populate: { path: "student" } }).sort({ dayOfWeek: 1, startTime: 1 });
 
         res.render("timetable", {
             timetableEntries, className, periodStart, periodEnd, weekStart, weekEnd,

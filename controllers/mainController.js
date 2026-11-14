@@ -41,6 +41,7 @@ exports.gradebookIndex = async (req, res) => {
             grades = await Grade.find()
                 .populate("student")
                 .populate("subject")
+                .populate("teacher")
                 .sort({ date: -1 });
         } else {
             const user = await User.findById(req.session.user.id)
@@ -56,6 +57,7 @@ exports.gradebookIndex = async (req, res) => {
                 })
                     .populate("student")
                     .populate("subject")
+                    .populate("teacher")
                     .sort({ date: -1 });
 
                 const subjectIds = [
@@ -88,7 +90,10 @@ exports.statsIndex = async (req, res) => {
     try {
         let match = {};
 
-        if (req.session.user && req.session.user.role !== "admin") {
+        if (req.session.user && req.session.user.role === "teacher") {
+            // A tanár statisztikája kizárólag az általa rögzített jegyekből készül.
+            match.teacher = new (require("mongoose").Types.ObjectId)(req.session.user.id);
+        } else if (req.session.user && req.session.user.role !== "admin") {
             const user = await User.findById(req.session.user.id);
 
             if (!user || !user.student) {
@@ -176,6 +181,11 @@ exports.manageGradesIndex = async (req, res) => {
         const dateTo = String(req.query.dateTo || "").trim();
 
         const gradeQuery = {};
+        // A tanár kizárólag a saját maga által rögzített jegyeket láthatja.
+        // Az adminisztrátor továbbra is minden jegyet megtekinthet.
+        if (req.session.user.role === "teacher") {
+            gradeQuery.teacher = req.session.user.id;
+        }
         let matchingStudentIds = null;
 
         if (className) {
@@ -217,6 +227,7 @@ exports.manageGradesIndex = async (req, res) => {
         const grades = await Grade.find(gradeQuery)
             .populate("student")
             .populate("subject")
+            .populate("teacher")
             .sort({ date: -1, _id: -1 });
 
         const canApproveStudents = false;
@@ -225,7 +236,11 @@ exports.manageGradesIndex = async (req, res) => {
             .sort({ username: 1 });
         let editGrade = null;
         if (req.query.edit) {
-            editGrade = await Grade.findById(req.query.edit);
+            const editQuery = { _id: req.query.edit };
+            if (req.session.user.role === "teacher") {
+                editQuery.teacher = req.session.user.id;
+            }
+            editGrade = await Grade.findOne(editQuery);
         }
 
         res.render("manageGrades", {
@@ -742,6 +757,7 @@ exports.gradeCreate = async (req, res) => {
             value: Number(value),
             type,
             date: date || Date.now(),
+            ...(req.session.user.role === "teacher" ? { teacher: req.session.user.id } : {}),
             note
         });
 
@@ -758,8 +774,12 @@ exports.gradeUpdate = async (req, res) => {
     try {
         const { id, student, subject, value, type, date, note } = req.body;
 
-        await Grade.findByIdAndUpdate(
-            id,
+        const gradeFilter = { _id: id };
+        if (req.session.user.role === "teacher") {
+            gradeFilter.teacher = req.session.user.id;
+        }
+        const updatedGrade = await Grade.findOneAndUpdate(
+            gradeFilter,
             {
                 student,
                 subject,
@@ -770,6 +790,10 @@ exports.gradeUpdate = async (req, res) => {
             },
             { runValidators: true }
         );
+        if (!updatedGrade) {
+            req.session.message = "You can only edit grades entered by you.";
+            return res.redirect("/manage-grades");
+        }
 
         req.session.message = "Grade updated successfully!";
         res.redirect("/manage-grades");
@@ -782,7 +806,15 @@ exports.gradeUpdate = async (req, res) => {
 
 exports.gradeDelete = async (req, res) => {
     try {
-        await Grade.findByIdAndDelete(req.body.id);
+        const gradeFilter = { _id: req.body.id };
+        if (req.session.user.role === "teacher") {
+            gradeFilter.teacher = req.session.user.id;
+        }
+        const deletedGrade = await Grade.findOneAndDelete(gradeFilter);
+        if (!deletedGrade) {
+            req.session.message = "You can only delete grades entered by you.";
+            return res.redirect("/manage-grades");
+        }
 
         req.session.message = "Grade deleted successfully!";
         res.redirect("/manage-grades");

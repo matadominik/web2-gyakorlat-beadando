@@ -73,7 +73,7 @@
                         <tr>
                             <th>Name</th>
                             <th>Username</th>
-                            <th>Status</th>
+                            <th>Subjects</th>
                             <th>Change Password</th>
                             <th>Action</th>
                         </tr>
@@ -86,7 +86,7 @@
                                 <tr>
                                     <td><%= (teacher.student && teacher.student.name ? teacher.student.name : (teacher.displayName || teacher.username)) %></td>
                                     <td><%= teacher.username %></td>
-                                    <td><%= teacher.status === "disabled" ? "Disabled" : "Active" %></td>
+                                    <td><%= teacher.assignedSubjects && teacher.assignedSubjects.length ? teacher.assignedSubjects.join(", ") : "No subjects assigned" %></td>
                                     <td>
                                         <form method="POST" action="/manage-teachers/change-password" class="d-flex">
                                             <input type="hidden" name="userId" value="<%= teacher._id %>">

@@ -323,15 +323,29 @@ exports.manageGradesIndex = async (req, res) => {
         }
 
         let subjects;
+        let teacherAssignments = [];
 
         if (req.session.user.role === "teacher") {
             const teacherTimetableEntries = await TimetableEntry.find({
                 teacher: req.session.user.id
-            }).distinct("subject");
+            }).populate("subject");
+
+            const teacherSubjectIds = [...new Set(
+                teacherTimetableEntries
+                    .filter(entry => entry.subject)
+                    .map(entry => String(entry.subject._id))
+            )];
 
             subjects = await Subject.find({
-                _id: { $in: teacherTimetableEntries }
+                _id: { $in: teacherSubjectIds }
             }).sort({ name: 1 });
+
+            teacherAssignments = teacherTimetableEntries
+                .filter(entry => entry.subject)
+                .map(entry => ({
+                    subjectId: String(entry.subject._id),
+                    className: entry.className
+                }));
         } else {
             subjects = await Subject.find().populate("teacher").sort({ name: 1 });
         }
@@ -409,6 +423,7 @@ exports.manageGradesIndex = async (req, res) => {
         res.render("manageGrades", {
             students,
             subjects,
+            teacherAssignments,
             classes,
             grades,
             editGrade,
@@ -475,7 +490,26 @@ exports.rejectUser = async (req, res) => {
 exports.manageTeachersIndex = async (req, res) => {
     try {
         const teachers = await User.find({ role: { $in: ["teacher", "admin"] } }).populate("student").sort({ username: 1 });
-        const studentAccounts = await User.find({ role: "user" }).populate("student").sort({ username: 1 });
+        const teacherTimetableEntries = await TimetableEntry.find()
+            .populate("subject")
+            .sort({ className: 1 });
+        const teacherSubjectsMap = {};
+
+        teacherTimetableEntries.forEach(entry => {
+            if (!entry.teacher || !entry.subject) return;
+            const teacherId = String(entry.teacher);
+            teacherSubjectsMap[teacherId] ||= [];
+            if (!teacherSubjectsMap[teacherId].includes(entry.subject.name)) {
+                teacherSubjectsMap[teacherId].push(entry.subject.name);
+            }
+        });
+
+        teachers.forEach(teacher => {
+            teacher.assignedSubjects = (teacherSubjectsMap[String(teacher._id)] || [])
+                .sort((a, b) => a.localeCompare(b));
+        });
+
+        const studentAccounts = await User.find({ role: "user" }).populate("student");
         const pendingUsers = await User.find({ role: "user", status: "pending" }).populate("student").sort({ username: 1 });
         const classes = await SchoolClass.find().sort({ name: 1 });
         const subjects = await Subject.find().populate({ path: "teacher", populate: { path: "student" } }).sort({ name: 1 });

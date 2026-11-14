@@ -111,29 +111,32 @@
             <% } %>
 
             <div class="form-group mb-3">
-                <label>Student</label>
-                <select name="student" class="form-control" required>
-                    <option value="">Select a student</option>
-                    <% students.forEach(student => { %>
-                        <option value="<%= student._id %>"
-                            <%= editGrade && editGrade.student.toString() === student._id.toString() ? "selected" : "" %>>
-                            <%= student.name %> (<%= student.className %>)
+                <label>Subject</label>
+                <select name="subject" id="gradeSubject" class="form-control" required>
+                    <option value="">Select a subject first</option>
+                    <% subjects.forEach(subject => { %>
+                        <option value="<%= subject._id %>"
+                            <%= editGrade && String(editGrade.subject._id || editGrade.subject) === String(subject._id) ? "selected" : "" %>>
+                            <%= subject.name %>
                         </option>
                     <% }) %>
                 </select>
             </div>
 
             <div class="form-group mb-3">
-                <label>Subject</label>
-                <select name="subject" class="form-control" required>
-                    <option value="">Select a subject</option>
-                    <% subjects.forEach(subject => { %>
-                        <option value="<%= subject._id %>"
-                            <%= editGrade && editGrade.subject.toString() === subject._id.toString() ? "selected" : "" %>>
-                            <%= subject.name %>
+                <label>Student</label>
+                <select name="student" id="gradeStudent" class="form-control" required <%= user && user.role === "teacher" && !editGrade ? "disabled" : "" %>>
+                    <option value="">Select a subject first</option>
+                    <% students.forEach(student => { %>
+                        <option value="<%= student._id %>" data-class-name="<%= student.className %>"
+                            <%= editGrade && String(editGrade.student._id || editGrade.student) === String(student._id) ? "selected" : "" %>>
+                            <%= student.name %> (<%= student.className %>)
                         </option>
                     <% }) %>
                 </select>
+                <% if (user && user.role === "teacher") { %>
+                    <small class="form-text text-muted">Select a subject first. Only students in classes where you teach that subject will become available.</small>
+                <% } %>
             </div>
 
             <div class="form-group mb-3">
@@ -290,5 +293,54 @@
     </script>
 
     <%- include("partials/footer") %>
+<% if (user && user.role === "teacher") { %>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const subjectSelect = document.getElementById("gradeSubject");
+            const studentSelect = document.getElementById("gradeStudent");
+            const assignments = <%- JSON.stringify(teacherAssignments || []) %>;
+
+            if (!subjectSelect || !studentSelect) return;
+
+            const originalOptions = Array.from(studentSelect.querySelectorAll("option[data-class-name]"));
+            const selectedStudent = studentSelect.value;
+
+            function updateStudents() {
+                const subjectId = subjectSelect.value;
+                const allowedClasses = new Set(
+                    assignments
+                        .filter(item => String(item.subjectId) === String(subjectId))
+                        .map(item => String(item.className))
+                );
+
+                originalOptions.forEach(option => {
+                    option.disabled = !subjectId || !allowedClasses.has(String(option.dataset.className));
+                    option.hidden = option.disabled;
+                });
+
+                studentSelect.disabled = !subjectId || allowedClasses.size === 0;
+
+                const currentOption = studentSelect.options[studentSelect.selectedIndex];
+                if (!currentOption || currentOption.disabled) {
+                    studentSelect.value = "";
+                }
+
+                const placeholder = studentSelect.querySelector('option:not([data-class-name])');
+                if (placeholder) {
+                    placeholder.textContent = subjectId
+                        ? (allowedClasses.size ? "Select a student" : "No students available for this subject")
+                        : "Select a subject first";
+                }
+            }
+
+            subjectSelect.addEventListener("change", updateStudents);
+            updateStudents();
+
+            if (selectedStudent && !studentSelect.value) {
+                studentSelect.value = selectedStudent;
+            }
+        });
+    </script>
+<% } %>
 </body>
 </html>
